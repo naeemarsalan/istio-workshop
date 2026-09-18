@@ -11,6 +11,35 @@ Before starting these exercises, ensure you have:
 * Cluster administrator or project administrator permissions
 * The `oc` CLI tool installed and configured
 * A project namespace where you can deploy applications
+* The `istioctl` CLI, matching your control plane version (used in Exercise 3 and in Module 4)
+
+=== Installing istioctl
+
+Check the version of the Istio control plane running on the cluster:
+
+[source,bash]
+----
+oc get istiorevision
+----
+
+Download the matching `istioctl` release (replace `1.28.1` if your control plane reports a different minor version):
+
+[source,bash]
+----
+curl -sL https://github.com/istio/istio/releases/download/1.28.1/istioctl-1.28.1-linux-amd64.tar.gz \
+  | tar xz -C /tmp
+mkdir -p ~/.local/bin && mv /tmp/istioctl ~/.local/bin/istioctl
+export PATH="$HOME/.local/bin:$PATH"
+----
+
+Confirm the client can reach the control plane:
+
+[source,bash]
+----
+istioctl version
+----
+
+You should see a `client version`, a `control plane version` and a `data plane version`.
 
 == Exercise 1: Enable Sidecar Injection
 
@@ -84,14 +113,14 @@ oc get namespace $NAMESPACE
 
 === Step 3: Enable Sidecar Injection
 
-Enable automatic sidecar injection by adding the revision label to your namespace. The revision label specifies which Istio control plane revision to use for sidecar injection. For Istio version 1.23, use:
+Enable automatic sidecar injection by adding the revision label to your namespace. The revision label specifies which Istio control plane revision to use for sidecar injection. Use the revision reported by `oc get istiorevision`:
 
 [source,bash]
 ----
-oc label namespace $NAMESPACE istio.io/rev=default-1.23.0
+oc label namespace $NAMESPACE istio.io/rev=default
 ----
 
-NOTE: The revision value should match your Istio installation revision. This example uses `default-1.23.0` for Istio version 1.23.
+NOTE: The revision value should match your Istio installation revision. Run `oc get istiorevision` to list the revisions available on your cluster. On this cluster the revision is `default`.
 
 === Step 4: Verify Sidecar Injection Label
 
@@ -102,7 +131,7 @@ Verify that the revision label has been applied:
 oc get namespace $NAMESPACE --show-labels
 ----
 
-You should see `istio.io/rev=default-1.23.0` in the labels list.
+You should see `istio.io/rev=default` in the labels list.
 
 === Step 5: Deploy a Test Application
 
@@ -128,11 +157,26 @@ spec:
     spec:
       containers:
       - name: test-container
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: test-app
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: http
 EOF
 ----
+
+NOTE: The `Service` is required so that other pods in the mesh can reach this workload by name (for example `http://test-app:80` in Exercise 2). Istio also uses the named port (`http`) to determine the protocol.
 
 === Step 6: Verify Sidecar Injection
 
@@ -143,14 +187,35 @@ Check that the Envoy sidecar has been injected into your pod:
 oc get pods -n $NAMESPACE -l app=test-app
 ----
 
-Describe the pod to see all containers:
+The pod should report `2/2` in the `READY` column: your application container plus the injected `istio-proxy`.
+
+List the containers in the pod:
 
 [source,bash]
 ----
-oc describe pod -n $NAMESPACE -l app=test-app | grep -A 10 "Containers:"
+POD_NAME=$(oc get pod -n $NAMESPACE -l app=test-app -o jsonpath='{.items[0].metadata.name}')
+oc get pod -n $NAMESPACE $POD_NAME \
+  -o jsonpath='{.spec.initContainers[*].name}{"\n"}{.spec.containers[*].name}{"\n"}'
 ----
 
-You should see two containers: your application container and the `istio-proxy` sidecar container.
+You should see:
+
+----
+istio-validation istio-proxy
+test-container
+----
+
+IMPORTANT: From Istio 1.24 onward the sidecar is injected as a *native sidecar* — a Kubernetes init container with `restartPolicy: Always` — rather than as a regular container. This is why `istio-proxy` appears in the `initContainers` list and not under `Containers:` in `oc describe pod`. The pod still reports `2/2` ready, and `oc logs -c istio-proxy` and `oc exec -c istio-proxy` work exactly as before. Native sidecars start before the application container and shut down after it, which removes the long-standing startup and job-completion race conditions of the old model.
+
+You can confirm the sidecar is a native sidecar with:
+
+[source,bash]
+----
+oc get pod -n $NAMESPACE $POD_NAME \
+  -o jsonpath='{range .spec.initContainers[*]}{.name}{" restartPolicy="}{.restartPolicy}{"\n"}{end}'
+----
+
+`istio-proxy` should show `restartPolicy=Always`.
 
 == Exercise 2: Enable Mutual TLS (mTLS)
 
@@ -258,7 +323,32 @@ The connection should succeed, and you can verify in the Envoy access logs that 
 
 === Step 6: View Envoy Access Logs
 
-To verify mTLS is working, check the Envoy sidecar logs:
+IMPORTANT: Envoy access logging is *not* enabled by default in OpenShift Service Mesh 3. Without it the `istio-proxy` container only logs control-plane messages (certificate refreshes, readiness) and you will see no request lines at all. Enable access logging for your namespace with a `Telemetry` resource before continuing. This is namespace-scoped, so it does not affect other users of the shared control plane:
+
+[source,bash]
+----
+oc apply -f - <<EOF
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: workshop-access-logs
+  namespace: ${NAMESPACE}
+spec:
+  accessLogging:
+  - providers:
+    - name: envoy
+EOF
+----
+
+Generate some traffic again so there is something to look at:
+
+[source,bash]
+----
+POD_NAME=$(oc get pod -n $NAMESPACE -l app=test-app-2 -o jsonpath='{.items[0].metadata.name}')
+oc exec -n $NAMESPACE $POD_NAME -c test-container -- curl -s -o /dev/null http://test-app:80
+----
+
+Now check the Envoy sidecar logs:
 
 [source,bash]
 ----
@@ -302,7 +392,34 @@ istioctl proxy-config cluster $POD_NAME -n $NAMESPACE | grep -i tls
 
 This shows the TLS settings for outbound clusters.
 
-=== Step 3: Verify mTLS from Application Logs
+=== Step 3: Prove STRICT mTLS Is Enforced
+
+The most direct proof that `STRICT` mode is working is that a plaintext connection which bypasses the client sidecar is rejected. Requests addressed to the *service* go through the client sidecar and are upgraded to mTLS, while requests addressed directly to the *pod IP* are not.
+
+[source,bash]
+----
+CLIENT=$(oc get pod -n $NAMESPACE -l app=test-app-2 -o jsonpath='{.items[0].metadata.name}')
+POD_IP=$(oc get pod -n $NAMESPACE -l app=test-app -o jsonpath='{.items[0].status.podIP}')
+
+# Through the mesh - sidecar negotiates mTLS - succeeds
+oc exec -n $NAMESPACE $CLIENT -c test-container -- \
+  curl -s -o /dev/null -w "via mesh: HTTP %{http_code}\n" http://test-app:80
+
+# Straight to the pod IP - plaintext - rejected by the STRICT policy
+oc exec -n $NAMESPACE $CLIENT -c test-container -- \
+  curl -s -o /dev/null --max-time 8 -w "direct to pod: HTTP %{http_code}\n" http://$POD_IP:8080
+----
+
+Expected output:
+
+----
+via mesh: HTTP 200
+direct to pod: HTTP 503
+----
+
+The `503` confirms the inbound sidecar refused a non-mTLS connection.
+
+=== Step 4: Verify mTLS from Application Logs
 
 Check the Envoy access logs to verify mTLS connections. The logs should show TLS protocol information:
 

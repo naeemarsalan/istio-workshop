@@ -34,6 +34,8 @@ oc get namespace $NAMESPACE --show-labels | grep istio.io/rev
 
 === Step 2: Verify Istio Ingress Gateway
 
+IMPORTANT: OpenShift Service Mesh 3 does *not* install an ingress gateway for you — the Sail operator only manages the control plane (`istiod`) and the CNI. If `oc get svc -n istio-system istio-ingressgateway` returns `NotFound`, a cluster administrator must deploy one once for the whole workshop. See <<admin-ingress-gateway>> at the end of this module.
+
 Check that the Istio ingress gateway is running:
 
 [source,bash]
@@ -130,6 +132,36 @@ Deploy two sample applications to use for routing:
 [source,bash]
 ----
 oc apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-v1-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=frontend version=v1 pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-v1-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=backend version=v1 pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -149,9 +181,16 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: frontend-v1-conf
 ---
 apiVersion: v1
 kind: Service
@@ -163,7 +202,7 @@ spec:
     app: frontend
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
     name: http
 ---
 apiVersion: apps/v1
@@ -185,9 +224,16 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: backend-v1-conf
 ---
 apiVersion: v1
 kind: Service
@@ -199,10 +245,12 @@ spec:
     app: backend
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
     name: http
 EOF
 ----
+
+NOTE: Each deployment mounts a small `ConfigMap` that replaces the default nginx page with a plain-text line identifying the app, its version and the pod that served the request, for example `app=frontend version=v1 pod=frontend-55fbf59ccd-gzzqn uri=/`. Without this every workload returns the identical default nginx welcome page and the routing, load-balancing and traffic-splitting exercises later in this workshop cannot be verified.
 
 Wait for the pods to be ready:
 
@@ -318,7 +366,7 @@ Get the ingress gateway external address:
 
 [source,bash]
 ----
-INGRESS_HOST=$(oc get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+INGRESS_HOST=$(oc get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 echo $INGRESS_HOST
 ----
 
@@ -406,6 +454,21 @@ Deploy a second version of the frontend application:
 [source,bash]
 ----
 oc apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-v2-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=frontend version=v2 pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -425,9 +488,16 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: frontend-v2-conf
 EOF
 ----
 
@@ -472,6 +542,23 @@ oc get destinationrule frontend -n $NAMESPACE -o yaml
 
 === Step 3: Create VirtualService with Weighted Splitting
 
+IMPORTANT: In Exercise 2 you created a VirtualService named `frontend` for the host `frontend`. Two VirtualServices that claim the *same host* on the mesh gateway conflict, and Istio's merge order is undefined — in practice the weights below are silently ignored and traffic is spread evenly over all four pods instead. Delete the earlier VirtualService first:
+
+[source,bash]
+----
+oc delete virtualservice frontend -n $NAMESPACE
+----
+
+You can confirm there is no conflict at any point with:
+
+[source,bash]
+----
+istioctl analyze -n $NAMESPACE
+----
+
+A conflict is reported as `IST0109 ... define the same host ... which can lead to undefined behavior`.
+
+
 Create a VirtualService that splits traffic 90% to v1 and 10% to v2:
 
 [source,bash]
@@ -502,14 +589,27 @@ EOF
 
 Send multiple requests and observe the traffic distribution. You can check the Envoy access logs to see which version receives each request:
 
+Because each version returns its own identity string, you can count the split directly. Run the requests from a pod that is already inside the mesh — starting 100 short-lived `oc run` pods is slow and each one needs its own sidecar:
+
 [source,bash]
 ----
-for i in {1..20}; do
-  oc run curl-test-$i --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -s http://frontend > /dev/null
-done
+CLIENT=$(oc get pod -n $NAMESPACE -l app=test-app-2 -o jsonpath='{.items[0].metadata.name}')
+
+oc exec -n $NAMESPACE $CLIENT -c test-container -- \
+  sh -c 'for i in $(seq 1 100); do curl -s http://frontend; done' \
+  | grep -oE 'version=v[12]' | sort | uniq -c
 ----
 
-Check the logs to see traffic distribution:
+With weights of 90/10 you should see roughly:
+
+----
+     92 version=v1
+      8 version=v2
+----
+
+NOTE: The split is statistical, not exact — expect a few percent of variation over 100 requests. Weighted routing is applied per request by the *client* sidecar.
+
+You can also confirm which pods served the traffic in the access logs:
 
 [source,bash]
 ----
@@ -664,7 +764,7 @@ Get the ingress gateway address:
 
 [source,bash]
 ----
-INGRESS_HOST=$(oc get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+INGRESS_HOST=$(oc get svc -n istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 INGRESS_PORT=$(oc get svc -n istio-system istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].port}')
 ----
 
@@ -763,3 +863,195 @@ If you encounter issues:
 * *Traffic not splitting correctly*: Check that DestinationRule subsets match the pod labels, and verify the weight percentages sum to 100
 * *External access not working*: Verify the ingress gateway service has an external IP or use port-forwarding for testing
 * *Path matching not working*: Check the match conditions are correct and that routes are ordered properly (most specific first)
+
+
+[#admin-ingress-gateway]
+== Appendix: Administrator Setup — Ingress Gateway
+
+These steps are performed *once per cluster* by an administrator, not by each workshop participant.
+
+=== Deploy the ingress gateway
+
+Service Mesh 3 supports *gateway injection*: you create an ordinary `Deployment` with the annotation `inject.istio.io/templates: gateway` and `image: auto`, and `istiod` replaces the placeholder with the correct Red Hat proxy image for the running control-plane revision. This keeps the gateway and the control plane on exactly the same version.
+
+[source,bash]
+----
+oc apply -f - <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  template:
+    metadata:
+      annotations:
+        inject.istio.io/templates: gateway
+      labels:
+        app: istio-ingressgateway
+        istio: ingressgateway
+        sidecar.istio.io/inject: "true"
+        istio.io/rev: default
+    spec:
+      serviceAccountName: istio-ingressgateway
+      containers:
+      - name: istio-proxy
+        image: auto
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: [ALL]
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-system
+  labels:
+    istio: ingressgateway
+spec:
+  type: LoadBalancer
+  selector:
+    istio: ingressgateway
+  ports:
+  - name: status-port
+    port: 15021
+    targetPort: 15021
+  - name: http2
+    port: 80
+    targetPort: 8080
+  - name: https
+    port: 443
+    targetPort: 8443
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: istio-ingressgateway-sds
+  namespace: istio-system
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: istio-ingressgateway-sds
+  namespace: istio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: istio-ingressgateway-sds
+subjects:
+- kind: ServiceAccount
+  name: istio-ingressgateway
+EOF
+----
+
+NOTE: The pod labels are deliberately `istio: ingressgateway` (used by the `Gateway` resource `selector` throughout this module) *and* `app: istio-ingressgateway` (used by the `oc get pods -l app=istio-ingressgateway` commands). The injection template needs `istio.io/rev` on the pod so that `istio-system` itself does not have to be labelled for injection.
+
+Verify:
+
+[source,bash]
+----
+oc get pods -n istio-system -l app=istio-ingressgateway
+oc get svc -n istio-system istio-ingressgateway
+----
+
+=== Provide a LoadBalancer address (bare-metal clusters)
+
+On a bare-metal cluster there is no cloud load balancer, so the `Service` above stays `<pending>` forever. MetalLB assigns it an address from a pool on the node network.
+
+Install the operator:
+
+[source,bash]
+----
+oc apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: metallb-system
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: metallb-operator
+  namespace: metallb-system
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: metallb-operator-sub
+  namespace: metallb-system
+spec:
+  channel: stable
+  name: metallb-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+  installPlanApproval: Automatic
+EOF
+----
+
+IMPORTANT: The `OperatorGroup` must have *no* `spec.targetNamespaces`. If you scope it to `metallb-system` the install mode becomes `OwnNamespace`, which the MetalLB operator does not support, and the CSV fails with `UnsupportedOperatorGroup: OwnNamespace InstallModeType not supported`.
+
+Then create the MetalLB instance and an address pool. Choose a range on the node subnet that is not in use by any host, DHCP scope, or another cluster:
+
+[source,bash]
+----
+oc apply -f - <<EOF
+apiVersion: metallb.io/v1beta1
+kind: MetalLB
+metadata:
+  name: metallb
+  namespace: metallb-system
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: workshop-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 172.16.2.210-172.16.2.229
+  autoAssign: false
+  avoidBuggyIPs: true
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: workshop-l2
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - workshop-pool
+EOF
+----
+
+NOTE: `autoAssign: false` keeps the pool from handing addresses to unrelated `LoadBalancer` services that already exist on the cluster in a `<pending>` state. Services that should draw from the pool ask for it by name with an annotation.
+
+Bind the gateway service to the pool:
+
+[source,bash]
+----
+oc annotate svc istio-ingressgateway -n istio-system \
+  metallb.universe.tf/address-pool=workshop-pool --overwrite
+oc get svc istio-ingressgateway -n istio-system
+----
+
+`EXTERNAL-IP` should now show an address from the pool.
+
+TIP: MetalLB in L2 mode answers ARP for the address but does not respond to ICMP, so `ping` to the `EXTERNAL-IP` fails even when everything works. Test with the gateway's status port instead: `curl http://<EXTERNAL-IP>:15021/healthz/ready` should return `200`. Port 80 only starts listening once a `Gateway` resource binds to it, so a connection refused on port 80 before Exercise 1 is expected.

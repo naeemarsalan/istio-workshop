@@ -32,6 +32,21 @@ Deploy a service with multiple replicas to observe load balancing:
 [source,bash]
 ----
 oc apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loadtest-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=loadtest version=v1 pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -51,14 +66,21 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         env:
         - name: POD_NAME
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: loadtest-conf
 ---
 apiVersion: v1
 kind: Service
@@ -70,7 +92,7 @@ spec:
     app: loadtest
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
     name: http
 EOF
 ----
@@ -113,14 +135,28 @@ oc get destinationrule loadtest-service -n $NAMESPACE -o yaml
 
 Send multiple requests and observe the distribution. Check the logs to see which pod handles each request:
 
+Each pod reports its own name in the response, so you can count the distribution directly. Run the requests from a pod that is already in the mesh rather than starting one short-lived `oc run` pod per request:
+
 [source,bash]
 ----
-for i in {1..9}; do
-  oc run curl-test-$i --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -s http://loadtest-service > /dev/null
-done
+CLIENT=$(oc get pod -n $NAMESPACE -l app=test-app-2 -o jsonpath='{.items[0].metadata.name}')
+
+oc exec -n $NAMESPACE $CLIENT -c test-container -- \
+  sh -c 'for i in $(seq 1 30); do curl -s http://loadtest-service; done' \
+  | grep -oE 'pod=[a-z0-9-]+' | sort | uniq -c
 ----
 
-Check the access logs to see the distribution:
+With `ROUND_ROBIN` across three pods the split is exact:
+
+----
+     10 pod=loadtest-service-8bb5b4478-9xpkn
+     10 pod=loadtest-service-8bb5b4478-d9bbl
+     10 pod=loadtest-service-8bb5b4478-dsm62
+----
+
+Repeat the same command after each load-balancer change below. `LEAST_CONN` and `RANDOM` give an uneven but roughly balanced spread (for example 11/7/12), because neither is strictly cyclic.
+
+You can also confirm the requests in the access logs:
 
 [source,bash]
 ----
@@ -187,6 +223,36 @@ Deploy a primary service and a backup service:
 [source,bash]
 ----
 oc apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: primary-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=primary version=v1 pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=backup version=v1 pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -206,9 +272,16 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: primary-conf
 ---
 apiVersion: v1
 kind: Service
@@ -220,7 +293,7 @@ spec:
     app: primary
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -241,9 +314,16 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: backup-conf
 ---
 apiVersion: v1
 kind: Service
@@ -255,7 +335,7 @@ spec:
     app: backup
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
 EOF
 ----
 
@@ -275,7 +355,7 @@ spec:
   host: primary-service
   trafficPolicy:
     outlierDetection:
-      consecutiveErrors: 3
+      consecutive5xxErrors: 3
       interval: 30s
       baseEjectionTime: 30s
       maxEjectionPercent: 50
@@ -289,6 +369,8 @@ spec:
       version: v1
 EOF
 ----
+
+NOTE: Both subsets above select `version: v1`, and both are defined on the host `primary-service`. That means the `backup` subset resolves to the *same* pods as `primary` — this DestinationRule demonstrates the outlier-detection *syntax*, but it does not actually fail traffic over to `backup-service`. Real failover across services needs either distinct labels on one host, or locality-based failover.
 
 === Step 3: Create VirtualService for Failover
 
@@ -362,6 +444,21 @@ Deploy a service that we'll use to test circuit breaking:
 [source,bash]
 ----
 oc apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: circuit-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=circuit pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -379,9 +476,16 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: circuit-conf
 ---
 apiVersion: v1
 kind: Service
@@ -393,7 +497,7 @@ spec:
     app: circuit
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
 EOF
 ----
 
@@ -420,7 +524,7 @@ spec:
         http2MaxRequests: 2
         maxRequestsPerConnection: 1
     outlierDetection:
-      consecutiveErrors: 2
+      consecutive5xxErrors: 2
       interval: 30s
       baseEjectionTime: 30s
       maxEjectionPercent: 100
@@ -492,6 +596,21 @@ Deploy an application that will require authentication:
 [source,bash]
 ----
 oc apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=auth-service pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -509,9 +628,16 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: auth-conf
 ---
 apiVersion: v1
 kind: Service
@@ -523,7 +649,7 @@ spec:
     app: auth-service
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
 EOF
 ----
 
@@ -545,7 +671,7 @@ spec:
       app: auth-service
   jwtRules:
   - issuer: "testing@secure.istio.io"
-    jwksUri: "https://raw.githubusercontent.com/istio/istio/release-1.23/security/tools/jwt/samples/jwks.json"
+    jwksUri: "https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/jwks.json"
 EOF
 ----
 
@@ -562,6 +688,13 @@ oc get requestauthentication jwt-auth -n $NAMESPACE -o yaml
 ----
 
 === Step 4: Test Without JWT Token
+
+IMPORTANT: A `RequestAuthentication` resource on its own does **not** require callers to present a token. It only says "if a token is present it must be valid". A request with *no* token is therefore still allowed through, and returns `200`. Only an `AuthorizationPolicy` (Exercise 5) can make a token mandatory. Expect:
+
+* no token -> `200`
+* invalid token -> `401`
+* valid token -> `200`
+
 
 Try to access the service without a JWT token:
 
@@ -587,7 +720,7 @@ Get a sample JWT token from Istio's test tokens:
 
 [source,bash]
 ----
-TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.23/security/tools/jwt/samples/demo.jwt)
+TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/demo.jwt)
 echo $TOKEN
 ----
 
@@ -599,6 +732,14 @@ oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAME
 ----
 
 == Exercise 5: Create Authorization Policies
+
+IMPORTANT: If Kyverno is installed on your cluster, the short name `authorizationpolicy` is ambiguous — it also matches `authorizationpolicies.envoy.kyverno.io`, and `oc get`/`oc delete authorizationpolicy` will silently act on the wrong resource. Check with `oc api-resources | grep authorizationpolicies`. When in doubt use the fully-qualified name:
+
+[source,bash]
+----
+oc get authorizationpolicies.security.istio.io -n $NAMESPACE
+----
+
 
 In this exercise, you will create AuthorizationPolicies to control access to your services.
 
@@ -641,11 +782,21 @@ Try with a valid token (should be allowed):
 
 [source,bash]
 ----
-TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.23/security/tools/jwt/samples/demo.jwt)
+TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/demo.jwt)
 oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -H "Authorization: Bearer $TOKEN" http://auth-service
 ----
 
 === Step 3: Create Method-Based Authorization
+
+IMPORTANT: `AuthorizationPolicy` resources with `action: ALLOW` are *additive* — a request is permitted if **any** ALLOW policy matches it. The `require-jwt` policy you created in Step 1 allows every method for any authenticated caller, so it will keep permitting `DELETE` no matter what the policy below says, and the test in Step 4 will return `200` instead of `403`. Remove the broader policy first:
+
+[source,bash]
+----
+oc delete authorizationpolicies.security.istio.io require-jwt -n $NAMESPACE
+----
+
+NOTE: Authorization changes take a few seconds to reach every sidecar. If a test returns the old result, wait ~30 seconds and try again before assuming the policy is wrong.
+
 
 Create an AuthorizationPolicy that only allows GET and POST methods:
 
@@ -678,7 +829,7 @@ Test with GET (should work):
 
 [source,bash]
 ----
-TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.23/security/tools/jwt/samples/demo.jwt)
+TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/demo.jwt)
 oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -X GET -H "Authorization: Bearer $TOKEN" http://auth-service
 ----
 
@@ -744,7 +895,7 @@ Test the deny policy:
 
 [source,bash]
 ----
-TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.23/security/tools/jwt/samples/demo.jwt)
+TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/demo.jwt)
 oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -H "Authorization: Bearer $TOKEN" http://auth-service/admin/test
 ----
 
@@ -775,6 +926,21 @@ Deploy a service for the combined authentication and authorization exercise:
 [source,bash]
 ----
 oc apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: secure-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=secure-service pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -792,9 +958,16 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: secure-conf
 ---
 apiVersion: v1
 kind: Service
@@ -806,7 +979,7 @@ spec:
     app: secure-service
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
 EOF
 ----
 
@@ -828,7 +1001,7 @@ spec:
       app: secure-service
   jwtRules:
   - issuer: "testing@secure.istio.io"
-    jwksUri: "https://raw.githubusercontent.com/istio/istio/release-1.23/security/tools/jwt/samples/jwks.json"
+    jwksUri: "https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/jwks.json"
 EOF
 ----
 
@@ -904,7 +1077,7 @@ Test with valid token on allowed path (should work):
 
 [source,bash]
 ----
-TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.23/security/tools/jwt/samples/demo.jwt)
+TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/demo.jwt)
 oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -H "Authorization: Bearer $TOKEN" http://secure-service/api/test
 ----
 

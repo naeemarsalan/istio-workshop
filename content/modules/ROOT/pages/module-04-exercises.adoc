@@ -25,6 +25,11 @@ Ensure your namespace variable is set:
 export NAMESPACE={USER}-sandbox
 ----
 
+IMPORTANT: Two things about this module on OpenShift Service Mesh 3:
+
+. *Access logging must be enabled.* It is off by default. Exercises 3 and 4 read Envoy access logs and will show nothing until you apply the namespace-scoped `Telemetry` resource from Module 1, Exercise 2, Step 6.
+. *There is no `curl` inside the `istio-proxy` container.* The Red Hat proxy image ships a minimal root filesystem, so `oc exec ... -c istio-proxy -- curl ...` returns an empty result. Use `pilot-agent request GET <path>` instead — it queries the same Envoy admin endpoint. The exercises below already use `pilot-agent`. From your *workstation* (outside the pod), `curl` works normally against an `oc port-forward`.
+
 === Step 2: Deploy a Test Service
 
 Deploy a simple service to generate metrics:
@@ -49,9 +54,9 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: nginxinc/nginx-unprivileged:alpine
         ports:
-        - containerPort: 80
+        - containerPort: 8080
 ---
 apiVersion: v1
 kind: Service
@@ -63,7 +68,7 @@ spec:
     app: metrics-test
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
 EOF
 ----
 
@@ -164,7 +169,7 @@ Query metrics from the first pod:
 [source,bash]
 ----
 POD1=$(oc get pod -n $NAMESPACE -l app=metrics-test -o jsonpath='{.items[0].metadata.name}')
-oc exec -n $NAMESPACE $POD1 -c istio-proxy -- curl -s http://localhost:15020/stats/prometheus | grep istio_requests_total | head -5
+oc exec -n $NAMESPACE $POD1 -c istio-proxy -- pilot-agent request GET stats/prometheus | grep istio_requests_total | head -5
 ----
 
 Query metrics from the second pod:
@@ -172,7 +177,7 @@ Query metrics from the second pod:
 [source,bash]
 ----
 POD2=$(oc get pod -n $NAMESPACE -l app=metrics-test -o jsonpath='{.items[1].metadata.name}')
-oc exec -n $NAMESPACE $POD2 -c istio-proxy -- curl -s http://localhost:15020/stats/prometheus | grep istio_requests_total | head -5
+oc exec -n $NAMESPACE $POD2 -c istio-proxy -- pilot-agent request GET stats/prometheus | grep istio_requests_total | head -5
 ----
 
 Compare the request counts between pods to see load distribution.
@@ -185,7 +190,7 @@ Get total request count across all pods:
 ----
 for pod in $(oc get pods -n $NAMESPACE -l app=metrics-test -o jsonpath='{.items[*].metadata.name}'); do
   echo "Pod: $pod"
-  oc exec -n $NAMESPACE $pod -c istio-proxy -- curl -s http://localhost:15020/stats/prometheus | grep "istio_requests_total.*destination_service_name=\"metrics-test\"" | head -3
+  oc exec -n $NAMESPACE $pod -c istio-proxy -- pilot-agent request GET stats/prometheus | grep "istio_requests_total.*destination_service_name=\"metrics-test\"" | head -3
 done
 ----
 
@@ -304,6 +309,14 @@ done
 oc run curl-slow --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -s --max-time 5 http://metrics-test > /dev/null
 ----
 
+NOTE: The default Envoy access-log format is a positional *text* line, not key/value pairs — there are no `duration="..."` or `request_size="..."` fields to grep for. A line looks like this:
+
+----
+[2026-09-18T13:51:12.485Z] "GET / HTTP/1.1" 200 - via_upstream - "-" 0 57 9 1 "-" "curl/8.22.0" ...
+----
+
+Reading the fields after the quoted request: `200` is the response code and `-` the response flags; after the upstream-failure field come `0` (bytes received), `57` (bytes sent), `9` (total duration in ms) and `1` (upstream service time in ms). The commands below extract those positional fields.
+
 === Step 2: Extract Request Durations
 
 Extract and analyze request durations from logs:
@@ -311,7 +324,8 @@ Extract and analyze request durations from logs:
 [source,bash]
 ----
 POD_NAME=$(oc get pod -n $NAMESPACE -l app=metrics-test -o jsonpath='{.items[0].metadata.name}')
-oc logs -n $NAMESPACE $POD_NAME -c istio-proxy --tail=50 | grep -oP 'duration="\K[0-9]+' | head -20
+oc logs -n $NAMESPACE $POD_NAME -c istio-proxy --tail=50 \
+  | grep -oP '" [0-9]{3} \S+ \S+ \S+ "[^"]*" [0-9]+ [0-9]+ \K[0-9]+' | head -20
 ----
 
 === Step 3: Count Requests by Response Code
@@ -320,7 +334,8 @@ Count requests by HTTP response code:
 
 [source,bash]
 ----
-oc logs -n $NAMESPACE $POD_NAME -c istio-proxy --tail=100 | grep -oP '"\s\K[0-9]{3}' | sort | uniq -c
+oc logs -n $NAMESPACE $POD_NAME -c istio-proxy --tail=100 \
+  | grep -oP '" \K[0-9]{3}' | sort | uniq -c
 ----
 
 === Step 4: Find Longest Requests
@@ -329,7 +344,8 @@ Find the requests with the longest duration:
 
 [source,bash]
 ----
-oc logs -n $NAMESPACE $POD_NAME -c istio-proxy --tail=100 | grep duration | sort -t'"' -k4 -rn | head -5
+oc logs -n $NAMESPACE $POD_NAME -c istio-proxy --tail=100 \
+  | grep -oP '" [0-9]{3} \S+ \S+ \S+ "[^"]*" [0-9]+ [0-9]+ \K[0-9]+' | sort -rn | head -5
 ----
 
 === Step 5: Analyze Request Sizes
@@ -338,8 +354,13 @@ Extract request and response sizes:
 
 [source,bash]
 ----
-oc logs -n $NAMESPACE $POD_NAME -c istio-proxy --tail=50 | grep -oP 'request_size="\K[0-9]+' | head -20
-oc logs -n $NAMESPACE $POD_NAME -c istio-proxy --tail=50 | grep -oP 'response_size="\K[0-9]+' | head -20
+# bytes_received (request size)
+oc logs -n $NAMESPACE $POD_NAME -c istio-proxy --tail=50 \
+  | grep -oP '" [0-9]{3} \S+ \S+ \S+ "[^"]*" \K[0-9]+' | head -20
+
+# bytes_sent (response size)
+oc logs -n $NAMESPACE $POD_NAME -c istio-proxy --tail=50 \
+  | grep -oP '" [0-9]{3} \S+ \S+ \S+ "[^"]*" [0-9]+ \K[0-9]+' | head -20
 ----
 
 == Exercise 5: Use istioctl for Observability
@@ -353,7 +374,7 @@ View the Envoy proxy configuration for a pod:
 [source,bash]
 ----
 POD_NAME=$(oc get pod -n $NAMESPACE -l app=metrics-test -o jsonpath='{.items[0].metadata.name}')
-istioctl proxy-config dump $POD_NAME -n $NAMESPACE | head -50
+istioctl proxy-config all $POD_NAME -n $NAMESPACE -o json | head -50
 ----
 
 === Step 2: View Proxy Stats
@@ -362,7 +383,7 @@ View Envoy proxy statistics using istioctl:
 
 [source,bash]
 ----
-istioctl proxy-stats $POD_NAME -n $NAMESPACE
+istioctl experimental envoy-stats $POD_NAME -n $NAMESPACE
 ----
 
 This shows a summary of key statistics.
@@ -373,14 +394,14 @@ View specific statistics, such as request counts:
 
 [source,bash]
 ----
-istioctl proxy-stats $POD_NAME -n $NAMESPACE | grep -i request
+istioctl experimental envoy-stats $POD_NAME -n $NAMESPACE | grep -i request
 ----
 
 View connection statistics:
 
 [source,bash]
 ----
-istioctl proxy-stats $POD_NAME -n $NAMESPACE | grep -i connection
+istioctl experimental envoy-stats $POD_NAME -n $NAMESPACE | grep -i connection
 ----
 
 === Step 4: View Cluster Information
@@ -428,7 +449,7 @@ POD_NAME=$(oc get pod -n $NAMESPACE -l app=metrics-test -o jsonpath='{.items[0].
 
 for i in {1..5}; do
   echo "=== Sample $i at $(date) ==="
-  oc exec -n $NAMESPACE $POD_NAME -c istio-proxy -- curl -s http://localhost:15020/stats/prometheus | grep "istio_requests_total.*destination_service_name=\"metrics-test\"" | head -3
+  oc exec -n $NAMESPACE $POD_NAME -c istio-proxy -- pilot-agent request GET stats/prometheus | grep "istio_requests_total.*destination_service_name=\"metrics-test\"" | head -3
   echo ""
   sleep 5
   
@@ -447,7 +468,7 @@ POD_NAME=$(oc get pod -n $NAMESPACE -l app=metrics-test -o jsonpath='{.items[0].
 
 for i in {1..5}; do
   echo "=== Error Check $i at $(date) ==="
-  oc exec -n $NAMESPACE $POD_NAME -c istio-proxy -- curl -s http://localhost:15020/stats/prometheus | grep "istio_requests_total.*response_code=\"5" | head -3
+  oc exec -n $NAMESPACE $POD_NAME -c istio-proxy -- pilot-agent request GET stats/prometheus | grep "istio_requests_total.*response_code=\"5" | head -3
   echo ""
   sleep 5
 done
@@ -460,7 +481,7 @@ Get baseline metrics:
 [source,bash]
 ----
 POD_NAME=$(oc get pod -n $NAMESPACE -l app=metrics-test -o jsonpath='{.items[0].metadata.name}')
-BASELINE=$(oc exec -n $NAMESPACE $POD_NAME -c istio-proxy -- curl -s http://localhost:15020/stats/prometheus | grep "istio_requests_total.*destination_service_name=\"metrics-test\"" | head -1)
+BASELINE=$(oc exec -n $NAMESPACE $POD_NAME -c istio-proxy -- pilot-agent request GET stats/prometheus | grep "istio_requests_total.*destination_service_name=\"metrics-test\"" | head -1)
 echo "Baseline: $BASELINE"
 ----
 
@@ -477,7 +498,7 @@ Check metrics after traffic:
 
 [source,bash]
 ----
-AFTER=$(oc exec -n $NAMESPACE $POD_NAME -c istio-proxy -- curl -s http://localhost:15020/stats/prometheus | grep "istio_requests_total.*destination_service_name=\"metrics-test\"" | head -1)
+AFTER=$(oc exec -n $NAMESPACE $POD_NAME -c istio-proxy -- pilot-agent request GET stats/prometheus | grep "istio_requests_total.*destination_service_name=\"metrics-test\"" | head -1)
 echo "After traffic: $AFTER"
 ----
 
