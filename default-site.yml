@@ -1,7 +1,7 @@
 ---
 site:
   title: Istio Service Mesh Workshop
-  url: "https://example.com"
+  url: "https://istio.workshop.k8socp.com"
   start_page: modules::index.adoc
 
 content:
