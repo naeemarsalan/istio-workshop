@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Module 1: Exercises :: Istio Service Mesh Workshop</title>
+    <link rel="canonical" href="https://naeemarsalan.github.io/istio-workshop/modules/module-01-exercises.html">
+    <link rel="prev" href="module-01-content.html">
+    <link rel="next" href="module-02-content.html">
+    <meta name="generator" content="Antora 3.2.0">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://demo.redhat.com" target="_blank" style="margin-left: 5%;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1508.5 178.739" style="width: 278px;"><g fill="#fff"><path d="M316.6 63.2v-56H342a21.279 21.279 0 0 1 7.8 1.3 18.111 18.111 0 0 1 5.9 3.5 15.577 15.577 0 0 1 5 11.8 15.051 15.051 0 0 1-3.1 9.5 16.836 16.836 0 0 1-8.4 5.8l12.5 24.1h-9.3l-11.6-23H325v23Zm24.7-48.6H325v18.7h16.3q5.25 0 8.1-2.7a8.7 8.7 0 0 0 2.8-6.6 8.7 8.7 0 0 0-2.8-6.6c-1.8-1.9-4.5-2.8-8.1-2.8ZM364.1 42.8a20.674 20.674 0 0 1 1.6-8.2 20.288 20.288 0 0 1 4.3-6.7 19.92 19.92 0 0 1 6.5-4.5 19.718 19.718 0 0 1 8-1.6 18.463 18.463 0 0 1 7.8 1.6 18.677 18.677 0 0 1 6.2 4.5 20.927 20.927 0 0 1 4.1 6.8 23.2 23.2 0 0 1 1.5 8.4v2.3H372a13.822 13.822 0 0 0 4.6 8.4 13.6 13.6 0 0 0 9.1 3.3 15.553 15.553 0 0 0 5.7-1 12.858 12.858 0 0 0 4.6-2.6l5.1 5a25.983 25.983 0 0 1-7.4 4.1 24.69 24.69 0 0 1-8.4 1.3 21.306 21.306 0 0 1-8.4-1.6 22.763 22.763 0 0 1-6.8-4.4 20.788 20.788 0 0 1-4.5-6.7 23.2 23.2 0 0 1-1.5-8.4Zm20.2-14.2a11.527 11.527 0 0 0-8 3 13.046 13.046 0 0 0-4.2 7.8h24.2a13.091 13.091 0 0 0-4.2-7.8 11.106 11.106 0 0 0-7.8-3ZM443.1 63.2v-3.8a19.448 19.448 0 0 1-5.8 3.3 18.924 18.924 0 0 1-6.7 1.2 19.824 19.824 0 0 1-14.6-6.1 22.268 22.268 0 0 1-4.4-6.7 21.812 21.812 0 0 1 0-16.4A20.534 20.534 0 0 1 416 28a19.335 19.335 0 0 1 6.6-4.5 20.334 20.334 0 0 1 8.2-1.6 20.7 20.7 0 0 1 6.6 1 19.415 19.415 0 0 1 5.7 3V7.2l8-1.8v57.8Zm-25.2-20.4a13.718 13.718 0 0 0 4 10.1 13.45 13.45 0 0 0 9.8 4.1 14.956 14.956 0 0 0 6.4-1.3 15.954 15.954 0 0 0 4.9-3.6V33.6a14.988 14.988 0 0 0-4.9-3.5 15.271 15.271 0 0 0-6.4-1.3 13.423 13.423 0 0 0-9.9 4 13.806 13.806 0 0 0-3.9 10ZM478.1 63.2v-56h8.4v24h29.8v-24h8.4v56h-8.4V38.8h-29.8v24.4ZM547.2 64a16.483 16.483 0 0 1-10.8-3.5 11.037 11.037 0 0 1-4.2-8.9 10.375 10.375 0 0 1 4.7-9.2 20.76 20.76 0 0 1 11.8-3.2 27.841 27.841 0 0 1 5.8.6 27.374 27.374 0 0 1 5.3 1.6v-4.3a8.143 8.143 0 0 0-2.6-6.5 11.452 11.452 0 0 0-7.4-2.2 20.788 20.788 0 0 0-6 .9 34.616 34.616 0 0 0-6.6 2.6l-3-6a54.169 54.169 0 0 1 8.4-3.1 33.18 33.18 0 0 1 8.3-1.1c5.2 0 9.3 1.3 12.2 3.8s4.4 6.1 4.4 10.8v27h-7.8v-3.5a19.441 19.441 0 0 1-5.8 3.2 23.54 23.54 0 0 1-6.7 1Zm-7.3-12.6a5.646 5.646 0 0 0 2.6 4.8 11.193 11.193 0 0 0 6.6 1.8 16.256 16.256 0 0 0 5.9-1 14.449 14.449 0 0 0 4.9-2.9V47a19.778 19.778 0 0 0-4.8-1.8 24.933 24.933 0 0 0-5.7-.6 11.859 11.859 0 0 0-6.8 1.8 5.728 5.728 0 0 0-2.7 5ZM580.6 53.2v-24H572v-6.7h8.6V12.1l7.9-1.9v12.3h12v6.7h-12v22.1a5.94 5.94 0 0 0 1.4 4.4c.9.9 2.5 1.3 4.6 1.3a23.637 23.637 0 0 0 3-.2 10.857 10.857 0 0 0 2.8-.8v6.7a19.28 19.28 0 0 1-3.8.9 27.484 27.484 0 0 1-3.8.3c-3.9 0-7-.9-9-2.8-2-1.7-3.1-4.4-3.1-7.9Z"></path></g><path d="M127 90.2c12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4L149.8 37c-1.7-7.1-3.2-10.3-15.7-16.6-9.7-5-30.8-13.1-37.1-13.1-5.8 0-7.5 7.5-14.4 7.5-6.7 0-11.6-5.6-17.9-5.6-6 0-9.9 4.1-12.9 12.5 0 0-8.4 23.7-9.5 27.2a4.216 4.216 0 0 0-.3 1.9c0 9.2 36.3 39.4 85 39.4Zm32.5-11.4c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3C21.8 58.8 0 61.8 0 81c0 31.5 74.6 70.3 133.7 70.3 45.3 0 56.7-20.5 56.7-36.6-.1-12.8-11-27.3-30.9-35.9Z" fill="#e00"></path><path d="M159.5 78.8c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3l3.7-9.1a4.877 4.877 0 0 0-.3 2c0 9.2 36.3 39.4 85 39.4 12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4Z"></path><path d="M253.5 158.7a2.22 2.22 0 0 1-2.2-2.2V2.2a2.2 2.2 0 0 1 4.4 0v154.2a2.242 2.242 0 0 1-2.2 2.3Z" fill="#fff"></path><text data-name="Demo Platform" transform="translate(1186 149)" fill="#fff" font-size="82" font-family="'RedHatDisplay', 'Overpass', overpass, helvetica, arial, sans-serif" font-weight="700"><tspan x="-877.892" y="0">Demo Platform</tspan></text></svg>
+      </a>
+      <a class="navbar-item site-title" target="__blank" style="color: #fff !important;" href="https://naeemarsalan.github.io/istio-workshop">Istio Service Mesh Workshop</a>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="modules" data-version="master">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html" class=" query-params-link">Istio Service Mesh Workshop</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 1: Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-01-content.html">Content</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="module-01-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 2: Traffic Management</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-02-content.html">Content</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-02-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 3: Advanced Traffic Management and Security</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-03-content.html">Content</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-03-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 4: Observability</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-04-content.html">Content</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-04-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <span class="title">Istio Service Mesh Workshop</span>
+      <ul class="versions">
+        <li class="version is-current">
+          <a href="index.html">master</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Istio Service Mesh Workshop</a></li>
+    <li>Module 1: Overview</li>
+    <li><a href="module-01-exercises.html">Exercises</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<article class="doc">
+<h1 class="page">Module 1: Exercises</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This exercise section provides hands-on practice with OpenShift Service Mesh 3. You will learn how to enable sidecar injection and configure mutual TLS (mTLS) for your applications.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before starting these exercises, ensure you have:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Access to an OpenShift cluster with Service Mesh 3 installed</p>
+</li>
+<li>
+<p>Cluster administrator or project administrator permissions</p>
+</li>
+<li>
+<p>The <code>oc</code> CLI tool installed and configured</p>
+</li>
+<li>
+<p>A project namespace where you can deploy applications</p>
+</li>
+<li>
+<p>The <code>istioctl</code> CLI, matching your control plane version (used in Exercise 3 and in Module 4)</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_installing_istioctl"><a class="anchor" href="#_installing_istioctl"></a>Installing istioctl</h3>
+<div class="paragraph">
+<p>Check the version of the Istio control plane running on the cluster:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get istiorevision</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Download the matching <code>istioctl</code> release (replace <code>1.28.1</code> if your control plane reports a different minor version):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl -sL https://github.com/istio/istio/releases/download/1.28.1/istioctl-1.28.1-linux-amd64.tar.gz \
+  | tar xz -C /tmp
+mkdir -p ~/.local/bin &amp;&amp; mv /tmp/istioctl ~/.local/bin/istioctl
+export PATH="$HOME/.local/bin:$PATH"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Confirm the client can reach the control plane:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">istioctl version</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see a <code>client version</code>, a <code>control plane version</code> and a <code>data plane version</code>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_1_enable_sidecar_injection"><a class="anchor" href="#_exercise_1_enable_sidecar_injection"></a>Exercise 1: Enable Sidecar Injection</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you will enable automatic sidecar injection for a namespace in OpenShift Service Mesh 3.</p>
+</div>
+<div class="sect2">
+<h3 id="_understanding_istio_cni"><a class="anchor" href="#_understanding_istio_cni"></a>Understanding Istio CNI</h3>
+<div class="paragraph">
+<p>Before verifying the installation, it&#8217;s important to understand the role of Istio CNI (Container Network Interface) in the service mesh architecture.</p>
+</div>
+<div class="paragraph">
+<p>Istio CNI is a critical component that handles network configuration for pods in the service mesh. Its primary purpose is to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Traffic Redirection</strong>: Sets up rules to route pod traffic through the Envoy sidecar without needing extra privileges.</p>
+</li>
+<li>
+<p><strong>Security</strong>: Removes the need for <code>NET_ADMIN</code> and <code>NET_RAW</code>, making pods safer.</p>
+</li>
+<li>
+<p><strong>Transparency</strong>: Automatically intercepts all pod traffic.</p>
+</li>
+<li>
+<p><strong>Initialization</strong>: Prepares networking before the app starts.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Without Istio CNI, sidecar injection would require pods to run with elevated privileges. The CNI plugin configures networking securely at pod startup.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_1_verify_service_mesh_installation"><a class="anchor" href="#_step_1_verify_service_mesh_installation"></a>Step 1: Verify Service Mesh Installation</h3>
+<div class="paragraph">
+<p>First, verify that OpenShift Service Mesh 3 is installed and all critical components are running. Check the Istio control plane pods:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get pods -n istio-system</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see the Istio control plane components running, including <code>istiod</code> pods. Verify they are in <code>Running</code> state:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get pods -n istio-system -l app=istiod</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, verify that Istio CNI is installed and running. The CNI components are deployed in the <code>istio-cni</code> namespace as DaemonSets to run on each node:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get pods -n istio-cni</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see Istio CNI pods running on each node in your cluster. Verify they are in <code>Running</code> state:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get daemonset -n istio-cni</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_set_your_namespace"><a class="anchor" href="#_step_2_set_your_namespace"></a>Step 2: Set Your Namespace</h3>
+<div class="paragraph">
+<p>Set the <code>NAMESPACE</code> environment variable to your existing sandbox namespace. Replace <code>{USER}</code> with your actual username:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export NAMESPACE={USER}-sandbox</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For example, if your username is <code>jdoe</code>, your namespace would be <code>jdoe-sandbox</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export NAMESPACE=jdoe-sandbox</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify that the namespace exists:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get namespace $NAMESPACE</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_enable_sidecar_injection"><a class="anchor" href="#_step_3_enable_sidecar_injection"></a>Step 3: Enable Sidecar Injection</h3>
+<div class="paragraph">
+<p>Enable automatic sidecar injection by adding the revision label to your namespace. The revision label specifies which Istio control plane revision to use for sidecar injection. Use the revision reported by <code>oc get istiorevision</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc label namespace $NAMESPACE istio.io/rev=default</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The revision value should match your Istio installation revision. Run <code>oc get istiorevision</code> to list the revisions available on your cluster. On this cluster the revision is <code>default</code>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_verify_sidecar_injection_label"><a class="anchor" href="#_step_4_verify_sidecar_injection_label"></a>Step 4: Verify Sidecar Injection Label</h3>
+<div class="paragraph">
+<p>Verify that the revision label has been applied:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get namespace $NAMESPACE --show-labels</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see <code>istio.io/rev=default</code> in the labels list.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_deploy_a_test_application"><a class="anchor" href="#_step_5_deploy_a_test_application"></a>Step 5: Deploy a Test Application</h3>
+<div class="paragraph">
+<p>Deploy a simple application to verify that sidecar injection is working:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-app
+  template:
+    metadata:
+      labels:
+        app: test-app
+    spec:
+      containers:
+      - name: test-container
+        image: nginxinc/nginx-unprivileged:alpine
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: test-app
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: http
+EOF</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The <code>Service</code> is required so that other pods in the mesh can reach this workload by name (for example <code><a href="http://test-app:80" class="bare">http://test-app:80</a></code> in Exercise 2). Istio also uses the named port (<code>http</code>) to determine the protocol.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_6_verify_sidecar_injection"><a class="anchor" href="#_step_6_verify_sidecar_injection"></a>Step 6: Verify Sidecar Injection</h3>
+<div class="paragraph">
+<p>Check that the Envoy sidecar has been injected into your pod:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get pods -n $NAMESPACE -l app=test-app</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The pod should report <code>2/2</code> in the <code>READY</code> column: your application container plus the injected <code>istio-proxy</code>.</p>
+</div>
+<div class="paragraph">
+<p>List the containers in the pod:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">POD_NAME=$(oc get pod -n $NAMESPACE -l app=test-app -o jsonpath='{.items[0].metadata.name}')
+oc get pod -n $NAMESPACE $POD_NAME \
+  -o jsonpath='{.spec.initContainers[*].name}{"\n"}{.spec.containers[*].name}{"\n"}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>istio-validation istio-proxy
+test-container</pre>
+</div>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+From Istio 1.24 onward the sidecar is injected as a <strong>native sidecar</strong> — a Kubernetes init container with <code>restartPolicy: Always</code> — rather than as a regular container. This is why <code>istio-proxy</code> appears in the <code>initContainers</code> list and not under <code>Containers:</code> in <code>oc describe pod</code>. The pod still reports <code>2/2</code> ready, and <code>oc logs -c istio-proxy</code> and <code>oc exec -c istio-proxy</code> work exactly as before. Native sidecars start before the application container and shut down after it, which removes the long-standing startup and job-completion race conditions of the old model.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You can confirm the sidecar is a native sidecar with:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get pod -n $NAMESPACE $POD_NAME \
+  -o jsonpath='{range .spec.initContainers[*]}{.name}{" restartPolicy="}{.restartPolicy}{"\n"}{end}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>istio-proxy</code> should show <code>restartPolicy=Always</code>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_2_enable_mutual_tls_mtls"><a class="anchor" href="#_exercise_2_enable_mutual_tls_mtls"></a>Exercise 2: Enable Mutual TLS (mTLS)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you will configure mutual TLS for your namespace using OpenShift Service Mesh 3.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_create_a_peerauthentication_policy"><a class="anchor" href="#_step_1_create_a_peerauthentication_policy"></a>Step 1: Create a PeerAuthentication Policy</h3>
+<div class="paragraph">
+<p>Create a PeerAuthentication resource to enable strict mTLS for your namespace:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: ${NAMESPACE}
+spec:
+  mtls:
+    mode: STRICT
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This policy enforces mTLS for all traffic within your namespace.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_verify_peerauthentication_policy"><a class="anchor" href="#_step_2_verify_peerauthentication_policy"></a>Step 2: Verify PeerAuthentication Policy</h3>
+<div class="paragraph">
+<p>Verify that the PeerAuthentication policy has been created:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get peerauthentication -n $NAMESPACE</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_create_a_destinationrule_optional_but_recommended"><a class="anchor" href="#_step_3_create_a_destinationrule_optional_but_recommended"></a>Step 3: Create a DestinationRule (Optional but Recommended)</h3>
+<div class="paragraph">
+<p>While PeerAuthentication enables mTLS, it&#8217;s a best practice to also create a DestinationRule to explicitly specify the TLS mode:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: default
+  namespace: ${NAMESPACE}
+spec:
+  host: "*.${NAMESPACE}.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This DestinationRule ensures that all services in the namespace use Istio-managed certificates for mTLS.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_verify_mtls_configuration"><a class="anchor" href="#_step_4_verify_mtls_configuration"></a>Step 4: Verify mTLS Configuration</h3>
+<div class="paragraph">
+<p>Check the Istio configuration to verify mTLS is enabled:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get peerauthentication -n $NAMESPACE -o yaml
+oc get destinationrule -n $NAMESPACE -o yaml</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_test_mtls_connection"><a class="anchor" href="#_step_5_test_mtls_connection"></a>Step 5: Test mTLS Connection</h3>
+<div class="paragraph">
+<p>Deploy a second application to test mTLS communication:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-2
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-app-2
+  template:
+    metadata:
+      labels:
+        app: test-app-2
+    spec:
+      containers:
+      - name: test-container
+        image: curlimages/curl:latest
+        command: ["sleep", "3600"]
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Wait for the pod to be ready, then exec into it and test connectivity:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">POD_NAME=$(oc get pod -n $NAMESPACE -l app=test-app-2 -o jsonpath='{.items[0].metadata.name}')
+oc exec -n $NAMESPACE $POD_NAME -c test-container -- curl -v http://test-app:80</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The connection should succeed, and you can verify in the Envoy access logs that mTLS is being used.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_6_view_envoy_access_logs"><a class="anchor" href="#_step_6_view_envoy_access_logs"></a>Step 6: View Envoy Access Logs</h3>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Envoy access logging is <strong>not</strong> enabled by default in OpenShift Service Mesh 3. Without it the <code>istio-proxy</code> container only logs control-plane messages (certificate refreshes, readiness) and you will see no request lines at all. Enable access logging for your namespace with a <code>Telemetry</code> resource before continuing. This is namespace-scoped, so it does not affect other users of the shared control plane:
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: workshop-access-logs
+  namespace: ${NAMESPACE}
+spec:
+  accessLogging:
+  - providers:
+    - name: envoy
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Generate some traffic again so there is something to look at:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">POD_NAME=$(oc get pod -n $NAMESPACE -l app=test-app-2 -o jsonpath='{.items[0].metadata.name}')
+oc exec -n $NAMESPACE $POD_NAME -c test-container -- curl -s -o /dev/null http://test-app:80</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now check the Envoy sidecar logs:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">POD_NAME=$(oc get pod -n $NAMESPACE -l app=test-app-2 -o jsonpath='{.items[0].metadata.name}')
+oc logs -n $NAMESPACE $POD_NAME -c istio-proxy | tail -20</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Look for log entries indicating TLS connections.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_3_verify_mtls_configuration"><a class="anchor" href="#_exercise_3_verify_mtls_configuration"></a>Exercise 3: Verify mTLS Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you will verify mTLS configuration using various methods.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_check_peerauthentication_and_destinationrule_resources"><a class="anchor" href="#_step_1_check_peerauthentication_and_destinationrule_resources"></a>Step 1: Check PeerAuthentication and DestinationRule Resources</h3>
+<div class="paragraph">
+<p>Verify the mTLS policies are correctly applied by checking the resources:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get peerauthentication -n $NAMESPACE -o yaml
+oc get destinationrule -n $NAMESPACE -o yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This shows the PeerAuthentication and DestinationRule configurations that enforce mTLS.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_verify_mtls_in_envoy_configuration"><a class="anchor" href="#_step_2_verify_mtls_in_envoy_configuration"></a>Step 2: Verify mTLS in Envoy Configuration</h3>
+<div class="paragraph">
+<p>Check the Envoy sidecar configuration to verify mTLS is enabled. Get the name of a pod:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">POD_NAME=$(oc get pod -n $NAMESPACE -l app=test-app -o jsonpath='{.items[0].metadata.name}')</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If <code>istioctl</code> is available, you can check the proxy configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">istioctl proxy-config cluster $POD_NAME -n $NAMESPACE | grep -i tls</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This shows the TLS settings for outbound clusters.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_prove_strict_mtls_is_enforced"><a class="anchor" href="#_step_3_prove_strict_mtls_is_enforced"></a>Step 3: Prove STRICT mTLS Is Enforced</h3>
+<div class="paragraph">
+<p>The most direct proof that <code>STRICT</code> mode is working is that a plaintext connection which bypasses the client sidecar is rejected. Requests addressed to the <strong>service</strong> go through the client sidecar and are upgraded to mTLS, while requests addressed directly to the <strong>pod IP</strong> are not.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">CLIENT=$(oc get pod -n $NAMESPACE -l app=test-app-2 -o jsonpath='{.items[0].metadata.name}')
+POD_IP=$(oc get pod -n $NAMESPACE -l app=test-app -o jsonpath='{.items[0].status.podIP}')
+
+# Through the mesh - sidecar negotiates mTLS - succeeds
+oc exec -n $NAMESPACE $CLIENT -c test-container -- \
+  curl -s -o /dev/null -w "via mesh: HTTP %{http_code}\n" http://test-app:80
+
+# Straight to the pod IP - plaintext - rejected by the STRICT policy
+oc exec -n $NAMESPACE $CLIENT -c test-container -- \
+  curl -s -o /dev/null --max-time 8 -w "direct to pod: HTTP %{http_code}\n" http://$POD_IP:8080</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Expected output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>via mesh: HTTP 200
+direct to pod: HTTP 503</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>503</code> confirms the inbound sidecar refused a non-mTLS connection.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_verify_mtls_from_application_logs"><a class="anchor" href="#_step_4_verify_mtls_from_application_logs"></a>Step 4: Verify mTLS from Application Logs</h3>
+<div class="paragraph">
+<p>Check the Envoy access logs to verify mTLS connections. The logs should show TLS protocol information:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">POD_NAME=$(oc get pod -n $NAMESPACE -l app=test-app-2 -o jsonpath='{.items[0].metadata.name}')
+oc logs -n $NAMESPACE $POD_NAME -c istio-proxy | grep -i tls</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also check for successful mTLS handshakes in the logs.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In these exercises, you have:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Enabled automatic sidecar injection for a namespace</p>
+</li>
+<li>
+<p>Verified that the Envoy sidecar is injected into application pods</p>
+</li>
+<li>
+<p>Configured mutual TLS (mTLS) using PeerAuthentication and DestinationRule resources</p>
+</li>
+<li>
+<p>Tested mTLS communication between services</p>
+</li>
+<li>
+<p>Verified mTLS configuration using <code>istioctl</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These foundational skills will be essential as you progress through the remaining modules of this workshop.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_troubleshooting"><a class="anchor" href="#_troubleshooting"></a>Troubleshooting</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you encounter issues:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Sidecar not injecting</strong>: Verify the namespace revision label is correct (<code>istio.io/rev=&lt;revision&gt;</code>) and matches your Istio installation revision. Ensure the Istio control plane is running.</p>
+</li>
+<li>
+<p><strong>mTLS not working</strong>: Ensure both PeerAuthentication and DestinationRule are properly configured</p>
+</li>
+<li>
+<p><strong>Connection failures</strong>: Check that both pods have sidecars injected and are in the same namespace (or that proper policies exist for cross-namespace communication)</p>
+</li>
+<li>
+<p><strong>Access denied</strong>: Verify that the Istio control plane pods (<code>istiod</code>) are running and that certificates are being issued by checking the <code>istiod</code> logs</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="module-01-content.html" class="query-params-link">Content</a></span>
+  <span class="next"><a href="module-02-content.html" class="query-params-link">Content</a></span>
+</nav>
+</article>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>  </div>
+</main>
+</div>
+<footer class="footer">
+  <a href="https://demo.redhat.com" target="_blank" class="poweredBy"><p>Powered by</p><div class="labInfo_poweredBy" style="display: block; width: 260px;"><svg class="labInfo_poweredByLogo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1508.5 178.739"><g fill="#111"><path d="M316.6 63.2v-56H342a21.279 21.279 0 0 1 7.8 1.3 18.111 18.111 0 0 1 5.9 3.5 15.577 15.577 0 0 1 5 11.8 15.051 15.051 0 0 1-3.1 9.5 16.836 16.836 0 0 1-8.4 5.8l12.5 24.1h-9.3l-11.6-23H325v23Zm24.7-48.6H325v18.7h16.3q5.25 0 8.1-2.7a8.7 8.7 0 0 0 2.8-6.6 8.7 8.7 0 0 0-2.8-6.6c-1.8-1.9-4.5-2.8-8.1-2.8ZM364.1 42.8a20.674 20.674 0 0 1 1.6-8.2 20.288 20.288 0 0 1 4.3-6.7 19.92 19.92 0 0 1 6.5-4.5 19.718 19.718 0 0 1 8-1.6 18.463 18.463 0 0 1 7.8 1.6 18.677 18.677 0 0 1 6.2 4.5 20.927 20.927 0 0 1 4.1 6.8 23.2 23.2 0 0 1 1.5 8.4v2.3H372a13.822 13.822 0 0 0 4.6 8.4 13.6 13.6 0 0 0 9.1 3.3 15.553 15.553 0 0 0 5.7-1 12.858 12.858 0 0 0 4.6-2.6l5.1 5a25.983 25.983 0 0 1-7.4 4.1 24.69 24.69 0 0 1-8.4 1.3 21.306 21.306 0 0 1-8.4-1.6 22.763 22.763 0 0 1-6.8-4.4 20.788 20.788 0 0 1-4.5-6.7 23.2 23.2 0 0 1-1.5-8.4Zm20.2-14.2a11.527 11.527 0 0 0-8 3 13.046 13.046 0 0 0-4.2 7.8h24.2a13.091 13.091 0 0 0-4.2-7.8 11.106 11.106 0 0 0-7.8-3ZM443.1 63.2v-3.8a19.448 19.448 0 0 1-5.8 3.3 18.924 18.924 0 0 1-6.7 1.2 19.824 19.824 0 0 1-14.6-6.1 22.268 22.268 0 0 1-4.4-6.7 21.812 21.812 0 0 1 0-16.4A20.534 20.534 0 0 1 416 28a19.335 19.335 0 0 1 6.6-4.5 20.334 20.334 0 0 1 8.2-1.6 20.7 20.7 0 0 1 6.6 1 19.415 19.415 0 0 1 5.7 3V7.2l8-1.8v57.8Zm-25.2-20.4a13.718 13.718 0 0 0 4 10.1 13.45 13.45 0 0 0 9.8 4.1 14.956 14.956 0 0 0 6.4-1.3 15.954 15.954 0 0 0 4.9-3.6V33.6a14.988 14.988 0 0 0-4.9-3.5 15.271 15.271 0 0 0-6.4-1.3 13.423 13.423 0 0 0-9.9 4 13.806 13.806 0 0 0-3.9 10ZM478.1 63.2v-56h8.4v24h29.8v-24h8.4v56h-8.4V38.8h-29.8v24.4ZM547.2 64a16.483 16.483 0 0 1-10.8-3.5 11.037 11.037 0 0 1-4.2-8.9 10.375 10.375 0 0 1 4.7-9.2 20.76 20.76 0 0 1 11.8-3.2 27.841 27.841 0 0 1 5.8.6 27.374 27.374 0 0 1 5.3 1.6v-4.3a8.143 8.143 0 0 0-2.6-6.5 11.452 11.452 0 0 0-7.4-2.2 20.788 20.788 0 0 0-6 .9 34.616 34.616 0 0 0-6.6 2.6l-3-6a54.169 54.169 0 0 1 8.4-3.1 33.18 33.18 0 0 1 8.3-1.1c5.2 0 9.3 1.3 12.2 3.8s4.4 6.1 4.4 10.8v27h-7.8v-3.5a19.441 19.441 0 0 1-5.8 3.2 23.54 23.54 0 0 1-6.7 1Zm-7.3-12.6a5.646 5.646 0 0 0 2.6 4.8 11.193 11.193 0 0 0 6.6 1.8 16.256 16.256 0 0 0 5.9-1 14.449 14.449 0 0 0 4.9-2.9V47a19.778 19.778 0 0 0-4.8-1.8 24.933 24.933 0 0 0-5.7-.6 11.859 11.859 0 0 0-6.8 1.8 5.728 5.728 0 0 0-2.7 5ZM580.6 53.2v-24H572v-6.7h8.6V12.1l7.9-1.9v12.3h12v6.7h-12v22.1a5.94 5.94 0 0 0 1.4 4.4c.9.9 2.5 1.3 4.6 1.3a23.637 23.637 0 0 0 3-.2 10.857 10.857 0 0 0 2.8-.8v6.7a19.28 19.28 0 0 1-3.8.9 27.484 27.484 0 0 1-3.8.3c-3.9 0-7-.9-9-2.8-2-1.7-3.1-4.4-3.1-7.9Z"></path></g><path d="M127 90.2c12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4L149.8 37c-1.7-7.1-3.2-10.3-15.7-16.6-9.7-5-30.8-13.1-37.1-13.1-5.8 0-7.5 7.5-14.4 7.5-6.7 0-11.6-5.6-17.9-5.6-6 0-9.9 4.1-12.9 12.5 0 0-8.4 23.7-9.5 27.2a4.216 4.216 0 0 0-.3 1.9c0 9.2 36.3 39.4 85 39.4Zm32.5-11.4c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3C21.8 58.8 0 61.8 0 81c0 31.5 74.6 70.3 133.7 70.3 45.3 0 56.7-20.5 56.7-36.6-.1-12.8-11-27.3-30.9-35.9Z" fill="#e00"></path><path d="M159.5 78.8c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3l3.7-9.1a4.877 4.877 0 0 0-.3 2c0 9.2 36.3 39.4 85 39.4 12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4Z"></path><path d="M253.5 158.7a2.22 2.22 0 0 1-2.2-2.2V2.2a2.2 2.2 0 0 1 4.4 0v154.2a2.242 2.242 0 0 1-2.2 2.3Z" fill="#111"></path><text data-name="Demo Platform" transform="translate(1186 149)" fill="#111" font-size="82" font-family="'RedHatDisplay', 'Overpass', overpass, helvetica, arial, sans-serif" font-weight="700"><tspan x="-877.892" y="0">Demo Platform</tspan></text></svg></div></div>
+</footer>
+<script src="../_/js/vendor/clipboard.js"></script>
+<script src="../_/js/site.js"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+  </body>
+</html>

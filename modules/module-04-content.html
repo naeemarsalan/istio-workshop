@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Module 4: Observability :: Istio Service Mesh Workshop</title>
+    <link rel="canonical" href="https://naeemarsalan.github.io/istio-workshop/modules/module-04-content.html">
+    <link rel="prev" href="module-03-exercises.html">
+    <link rel="next" href="module-04-exercises.html">
+    <meta name="generator" content="Antora 3.2.0">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://demo.redhat.com" target="_blank" style="margin-left: 5%;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1508.5 178.739" style="width: 278px;"><g fill="#fff"><path d="M316.6 63.2v-56H342a21.279 21.279 0 0 1 7.8 1.3 18.111 18.111 0 0 1 5.9 3.5 15.577 15.577 0 0 1 5 11.8 15.051 15.051 0 0 1-3.1 9.5 16.836 16.836 0 0 1-8.4 5.8l12.5 24.1h-9.3l-11.6-23H325v23Zm24.7-48.6H325v18.7h16.3q5.25 0 8.1-2.7a8.7 8.7 0 0 0 2.8-6.6 8.7 8.7 0 0 0-2.8-6.6c-1.8-1.9-4.5-2.8-8.1-2.8ZM364.1 42.8a20.674 20.674 0 0 1 1.6-8.2 20.288 20.288 0 0 1 4.3-6.7 19.92 19.92 0 0 1 6.5-4.5 19.718 19.718 0 0 1 8-1.6 18.463 18.463 0 0 1 7.8 1.6 18.677 18.677 0 0 1 6.2 4.5 20.927 20.927 0 0 1 4.1 6.8 23.2 23.2 0 0 1 1.5 8.4v2.3H372a13.822 13.822 0 0 0 4.6 8.4 13.6 13.6 0 0 0 9.1 3.3 15.553 15.553 0 0 0 5.7-1 12.858 12.858 0 0 0 4.6-2.6l5.1 5a25.983 25.983 0 0 1-7.4 4.1 24.69 24.69 0 0 1-8.4 1.3 21.306 21.306 0 0 1-8.4-1.6 22.763 22.763 0 0 1-6.8-4.4 20.788 20.788 0 0 1-4.5-6.7 23.2 23.2 0 0 1-1.5-8.4Zm20.2-14.2a11.527 11.527 0 0 0-8 3 13.046 13.046 0 0 0-4.2 7.8h24.2a13.091 13.091 0 0 0-4.2-7.8 11.106 11.106 0 0 0-7.8-3ZM443.1 63.2v-3.8a19.448 19.448 0 0 1-5.8 3.3 18.924 18.924 0 0 1-6.7 1.2 19.824 19.824 0 0 1-14.6-6.1 22.268 22.268 0 0 1-4.4-6.7 21.812 21.812 0 0 1 0-16.4A20.534 20.534 0 0 1 416 28a19.335 19.335 0 0 1 6.6-4.5 20.334 20.334 0 0 1 8.2-1.6 20.7 20.7 0 0 1 6.6 1 19.415 19.415 0 0 1 5.7 3V7.2l8-1.8v57.8Zm-25.2-20.4a13.718 13.718 0 0 0 4 10.1 13.45 13.45 0 0 0 9.8 4.1 14.956 14.956 0 0 0 6.4-1.3 15.954 15.954 0 0 0 4.9-3.6V33.6a14.988 14.988 0 0 0-4.9-3.5 15.271 15.271 0 0 0-6.4-1.3 13.423 13.423 0 0 0-9.9 4 13.806 13.806 0 0 0-3.9 10ZM478.1 63.2v-56h8.4v24h29.8v-24h8.4v56h-8.4V38.8h-29.8v24.4ZM547.2 64a16.483 16.483 0 0 1-10.8-3.5 11.037 11.037 0 0 1-4.2-8.9 10.375 10.375 0 0 1 4.7-9.2 20.76 20.76 0 0 1 11.8-3.2 27.841 27.841 0 0 1 5.8.6 27.374 27.374 0 0 1 5.3 1.6v-4.3a8.143 8.143 0 0 0-2.6-6.5 11.452 11.452 0 0 0-7.4-2.2 20.788 20.788 0 0 0-6 .9 34.616 34.616 0 0 0-6.6 2.6l-3-6a54.169 54.169 0 0 1 8.4-3.1 33.18 33.18 0 0 1 8.3-1.1c5.2 0 9.3 1.3 12.2 3.8s4.4 6.1 4.4 10.8v27h-7.8v-3.5a19.441 19.441 0 0 1-5.8 3.2 23.54 23.54 0 0 1-6.7 1Zm-7.3-12.6a5.646 5.646 0 0 0 2.6 4.8 11.193 11.193 0 0 0 6.6 1.8 16.256 16.256 0 0 0 5.9-1 14.449 14.449 0 0 0 4.9-2.9V47a19.778 19.778 0 0 0-4.8-1.8 24.933 24.933 0 0 0-5.7-.6 11.859 11.859 0 0 0-6.8 1.8 5.728 5.728 0 0 0-2.7 5ZM580.6 53.2v-24H572v-6.7h8.6V12.1l7.9-1.9v12.3h12v6.7h-12v22.1a5.94 5.94 0 0 0 1.4 4.4c.9.9 2.5 1.3 4.6 1.3a23.637 23.637 0 0 0 3-.2 10.857 10.857 0 0 0 2.8-.8v6.7a19.28 19.28 0 0 1-3.8.9 27.484 27.484 0 0 1-3.8.3c-3.9 0-7-.9-9-2.8-2-1.7-3.1-4.4-3.1-7.9Z"></path></g><path d="M127 90.2c12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4L149.8 37c-1.7-7.1-3.2-10.3-15.7-16.6-9.7-5-30.8-13.1-37.1-13.1-5.8 0-7.5 7.5-14.4 7.5-6.7 0-11.6-5.6-17.9-5.6-6 0-9.9 4.1-12.9 12.5 0 0-8.4 23.7-9.5 27.2a4.216 4.216 0 0 0-.3 1.9c0 9.2 36.3 39.4 85 39.4Zm32.5-11.4c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3C21.8 58.8 0 61.8 0 81c0 31.5 74.6 70.3 133.7 70.3 45.3 0 56.7-20.5 56.7-36.6-.1-12.8-11-27.3-30.9-35.9Z" fill="#e00"></path><path d="M159.5 78.8c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3l3.7-9.1a4.877 4.877 0 0 0-.3 2c0 9.2 36.3 39.4 85 39.4 12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4Z"></path><path d="M253.5 158.7a2.22 2.22 0 0 1-2.2-2.2V2.2a2.2 2.2 0 0 1 4.4 0v154.2a2.242 2.242 0 0 1-2.2 2.3Z" fill="#fff"></path><text data-name="Demo Platform" transform="translate(1186 149)" fill="#fff" font-size="82" font-family="'RedHatDisplay', 'Overpass', overpass, helvetica, arial, sans-serif" font-weight="700"><tspan x="-877.892" y="0">Demo Platform</tspan></text></svg>
+      </a>
+      <a class="navbar-item site-title" target="__blank" style="color: #fff !important;" href="https://naeemarsalan.github.io/istio-workshop">Istio Service Mesh Workshop</a>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="modules" data-version="master">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html" class=" query-params-link">Istio Service Mesh Workshop</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 1: Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-01-content.html">Content</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-01-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 2: Traffic Management</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-02-content.html">Content</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-02-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 3: Advanced Traffic Management and Security</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-03-content.html">Content</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-03-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 4: Observability</span>
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="module-04-content.html">Content</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-04-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <span class="title">Istio Service Mesh Workshop</span>
+      <ul class="versions">
+        <li class="version is-current">
+          <a href="index.html">master</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Istio Service Mesh Workshop</a></li>
+    <li>Module 4: Observability</li>
+    <li><a href="module-04-content.html">Content</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<article class="doc">
+<h1 class="page">Module 4: Observability</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This module explores how Istio provides comprehensive observability into your microservices architecture. You will learn about the three pillars of observability—metrics, traces, and logs—how Istio generates these signals in standard formats, and how to explore them using local tools or integrate them with your APM (Application Performance Monitoring) solution.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_three_pillars_of_observability"><a class="anchor" href="#_the_three_pillars_of_observability"></a>The Three Pillars of Observability</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Observability is the ability to understand the internal state of a system by examining its outputs. In microservices architectures, observability is crucial because the distributed nature of services makes it difficult to understand system behavior without proper instrumentation.</p>
+</div>
+<div class="paragraph">
+<p>Istio provides three fundamental signals that form the foundation of observability:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Metrics</strong>: Quantitative measurements of system behavior over time</p>
+</li>
+<li>
+<p><strong>Traces</strong>: End-to-end request flows across service boundaries</p>
+</li>
+<li>
+<p><strong>Logs</strong>: Detailed records of events and activities</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Together, these three signals provide a complete picture of your microservices' health, performance, and behavior.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_metrics_quantitative_system_insights"><a class="anchor" href="#_metrics_quantitative_system_insights"></a>Metrics: Quantitative System Insights</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Metrics are numerical measurements collected over time that provide insights into system performance, health, and behavior. Istio automatically generates rich metrics for all service-to-service communication without requiring any changes to your application code.</p>
+</div>
+<div class="sect2">
+<h3 id="_what_metrics_does_istio_provide"><a class="anchor" href="#_what_metrics_does_istio_provide"></a>What Metrics Does Istio Provide?</h3>
+<div class="paragraph">
+<p>Istio generates metrics at multiple levels:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Service Metrics</strong>: Request rates, error rates, and latency for each service</p>
+</li>
+<li>
+<p><strong>Workload Metrics</strong>: Metrics specific to individual workload instances (pods)</p>
+</li>
+<li>
+<p><strong>Proxy Metrics</strong>: Detailed Envoy proxy metrics including connection counts, retries, and circuit breaker states</p>
+</li>
+<li>
+<p><strong>Control Plane Metrics</strong>: Metrics about the Istio control plane itself</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_standard_metrics_format"><a class="anchor" href="#_standard_metrics_format"></a>Standard Metrics Format</h3>
+<div class="paragraph">
+<p>Istio exposes metrics in the Prometheus format, which has become the de facto standard for metrics in cloud-native environments. Prometheus metrics are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Text-based</strong>: Human-readable format</p>
+</li>
+<li>
+<p><strong>Pull-based</strong>: Prometheus scrapes metrics from endpoints</p>
+</li>
+<li>
+<p><strong>Dimensional</strong>: Metrics include labels for filtering and aggregation</p>
+</li>
+<li>
+<p><strong>Time-series</strong>: Optimized for time-series databases</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_key_istio_metrics"><a class="anchor" href="#_key_istio_metrics"></a>Key Istio Metrics</h3>
+<div class="paragraph">
+<p>Some of the most important metrics Istio provides include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong><code>istio_requests_total</code></strong>: Total number of requests</p>
+</li>
+<li>
+<p><strong><code>istio_request_duration_milliseconds</code></strong>: Request latency</p>
+</li>
+<li>
+<p><strong><code>istio_request_bytes</code></strong>: Request payload size</p>
+</li>
+<li>
+<p><strong><code>istio_response_bytes</code></strong>: Response payload size</p>
+</li>
+<li>
+<p><strong><code>istio_tcp_connections_opened_total</code></strong>: TCP connection statistics</p>
+</li>
+<li>
+<p><strong><code>istio_tcp_connections_closed_total</code></strong>: TCP connection statistics</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Each metric includes labels such as:<br>
+* <code>source_service</code>: The service making the request<br>
+* <code>destination_service</code>: The service receiving the request<br>
+* <code>response_code</code>: HTTP response code<br>
+* <code>request_protocol</code>: Protocol used (HTTP, gRPC, etc.)</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_accessing_metrics_locally"><a class="anchor" href="#_accessing_metrics_locally"></a>Accessing Metrics Locally</h3>
+<div class="paragraph">
+<p>For local exploration, you can use tools like:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Kiali</strong>: Provides a service mesh dashboard with built-in metrics visualization</p>
+</li>
+<li>
+<p><strong>Prometheus</strong>: Direct access to metrics endpoints for querying and alerting</p>
+</li>
+<li>
+<p><strong>Grafana</strong>: Create custom dashboards using Prometheus as a data source</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These tools allow you to explore metrics in real-time, create dashboards, and set up alerts based on metric thresholds.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integrating_with_apm_solutions"><a class="anchor" href="#_integrating_with_apm_solutions"></a>Integrating with APM Solutions</h3>
+<div class="paragraph">
+<p>Istio metrics can be integrated with remote APM (Application Performance Monitoring) solutions such as:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Datadog</strong>: Cloud-based monitoring and analytics platform</p>
+</li>
+<li>
+<p><strong>New Relic</strong>: Application performance monitoring and observability platform</p>
+</li>
+<li>
+<p><strong>Dynatrace</strong>: Full-stack observability platform</p>
+</li>
+<li>
+<p><strong>Splunk</strong>: Enterprise observability and security platform</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These solutions typically provide:<br>
+* Advanced analytics and machine learning capabilities<br>
+* Long-term metric storage and retention<br>
+* Cross-platform correlation<br>
+* Enterprise-grade alerting and incident management<br>
+* Custom dashboards and reporting</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_traces_end_to_end_request_visibility"><a class="anchor" href="#_traces_end_to_end_request_visibility"></a>Traces: End-to-End Request Visibility</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Distributed tracing provides visibility into how requests flow through your microservices architecture. It shows the complete path a request takes from entry point to final destination, including all intermediate services.</p>
+</div>
+<div class="sect2">
+<h3 id="_what_is_distributed_tracing"><a class="anchor" href="#_what_is_distributed_tracing"></a>What is Distributed Tracing?</h3>
+<div class="paragraph">
+<p>Distributed tracing tracks requests as they traverse multiple services. Each request is assigned a unique trace ID, and each service interaction creates a span. Spans are connected to form a trace that shows the complete request journey.</p>
+</div>
+<div class="paragraph">
+<p>A trace consists of:<br>
+* <strong>Trace ID</strong>: Unique identifier for the entire request<br>
+* <strong>Spans</strong>: Individual operations within the trace<br>
+* <strong>Parent-Child Relationships</strong>: How spans relate to each other<br>
+* <strong>Timing Information</strong>: Duration of each operation<br>
+* <strong>Metadata</strong>: Additional context about each operation</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_istio_enables_tracing"><a class="anchor" href="#_how_istio_enables_tracing"></a>How Istio Enables Tracing</h3>
+<div class="paragraph">
+<p>Istio automatically instruments all service-to-service communication to generate traces. The Envoy sidecar proxies:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Generate spans for each request</p>
+</li>
+<li>
+<p>Propagate trace context between services</p>
+</li>
+<li>
+<p>Add metadata about the request (HTTP headers, response codes, etc.)</p>
+</li>
+<li>
+<p>Measure latency at each hop</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This happens transparently—your applications don&#8217;t need to be modified to participate in distributed tracing.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_standard_tracing_formats"><a class="anchor" href="#_standard_tracing_formats"></a>Standard Tracing Formats</h3>
+<div class="paragraph">
+<p>Istio supports multiple tracing formats:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>OpenTelemetry</strong>: Industry-standard observability framework</p>
+</li>
+<li>
+<p><strong>Zipkin</strong>: Open-source distributed tracing system</p>
+</li>
+<li>
+<p><strong>Jaeger</strong>: Open-source end-to-end distributed tracing</p>
+</li>
+<li>
+<p><strong>Lightstep</strong>: Commercial distributed tracing platform</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These formats are interoperable, allowing you to use different tools at different stages of your observability journey.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_accessing_traces_locally"><a class="anchor" href="#_accessing_traces_locally"></a>Accessing Traces Locally</h3>
+<div class="paragraph">
+<p>For local exploration, you can use:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Kiali</strong>: Provides trace visualization integrated with service topology</p>
+</li>
+<li>
+<p><strong>Tempo</strong>: Grafana&#8217;s open-source distributed tracing backend</p>
+</li>
+<li>
+<p><strong>Jaeger</strong>: Popular open-source tracing UI</p>
+</li>
+<li>
+<p><strong>Zipkin</strong>: Simple and fast distributed tracing system</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These tools allow you to:<br>
+* Search traces by service, operation, or tag<br>
+* View trace timelines and identify bottlenecks<br>
+* Analyze error rates and latency patterns<br>
+* Understand service dependencies</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integrating_with_apm_solutions_2"><a class="anchor" href="#_integrating_with_apm_solutions_2"></a>Integrating with APM Solutions</h3>
+<div class="paragraph">
+<p>Remote APM solutions provide advanced trace analysis:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Correlation</strong>: Correlate traces with metrics and logs</p>
+</li>
+<li>
+<p><strong>Service Maps</strong>: Automatic generation of service dependency graphs</p>
+</li>
+<li>
+<p><strong>Anomaly Detection</strong>: Identify unusual patterns in trace data</p>
+</li>
+<li>
+<p><strong>Root Cause Analysis</strong>: AI-powered analysis to identify issues</p>
+</li>
+<li>
+<p><strong>Long-term Storage</strong>: Retain traces for historical analysis</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_logs_detailed_event_records"><a class="anchor" href="#_logs_detailed_event_records"></a>Logs: Detailed Event Records</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Logs provide detailed, timestamped records of events and activities within your system. While metrics give you the "what" and traces give you the "where," logs provide the "why" and "how."</p>
+</div>
+<div class="sect2">
+<h3 id="_what_logs_does_istio_generate"><a class="anchor" href="#_what_logs_does_istio_generate"></a>What Logs Does Istio Generate?</h3>
+<div class="paragraph">
+<p>Istio generates comprehensive logs through the Envoy sidecar proxies:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Access Logs</strong>: Every HTTP/gRPC request and response</p>
+</li>
+<li>
+<p><strong>Error Logs</strong>: Detailed error information</p>
+</li>
+<li>
+<p><strong>Debug Logs</strong>: Low-level debugging information</p>
+</li>
+<li>
+<p><strong>Audit Logs</strong>: Security and policy enforcement events</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Access logs are particularly valuable because they capture:<br>
+* Request and response headers<br>
+* Request and response body (configurable)<br>
+* Response codes and status<br>
+* Timing information<br>
+* Connection metadata</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_standard_log_formats"><a class="anchor" href="#_standard_log_formats"></a>Standard Log Formats</h3>
+<div class="paragraph">
+<p>Istio logs are generated in standard formats:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>JSON</strong>: Structured JSON format for easy parsing</p>
+</li>
+<li>
+<p><strong>Text</strong>: Human-readable text format</p>
+</li>
+<li>
+<p><strong>OpenTelemetry Logs</strong>: OTLP format for integration with observability platforms</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The structured nature of these logs makes them easy to:<br>
+* Parse and analyze programmatically<br>
+* Filter and search<br>
+* Correlate with metrics and traces<br>
+* Integrate with log aggregation systems</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_accessing_logs_locally"><a class="anchor" href="#_accessing_logs_locally"></a>Accessing Logs Locally</h3>
+<div class="paragraph">
+<p>For local exploration, you can:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>View logs directly</strong>: Using <code>kubectl logs</code> or <code>oc logs</code> commands</p>
+</li>
+<li>
+<p><strong>Use Kiali</strong>: View logs in the context of service interactions</p>
+</li>
+<li>
+<p><strong>Use Tempo</strong>: Correlate logs with traces</p>
+</li>
+<li>
+<p><strong>Use log aggregation tools</strong>: Like Loki (Grafana&#8217;s log aggregation system)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These tools help you:<br>
+* Search logs by service, time range, or content<br>
+* Filter logs by severity or type<br>
+* Correlate logs with specific requests or traces<br>
+* Identify patterns and anomalies</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integrating_with_apm_solutions_3"><a class="anchor" href="#_integrating_with_apm_solutions_3"></a>Integrating with APM Solutions</h3>
+<div class="paragraph">
+<p>Remote APM and log management solutions provide:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Centralized Log Aggregation</strong>: Collect logs from all services</p>
+</li>
+<li>
+<p><strong>Advanced Search</strong>: Full-text search across all logs</p>
+</li>
+<li>
+<p><strong>Log Analytics</strong>: Machine learning-powered log analysis</p>
+</li>
+<li>
+<p><strong>Alerting</strong>: Alert on log patterns and errors</p>
+</li>
+<li>
+<p><strong>Compliance</strong>: Long-term storage for compliance requirements</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_standard_formats_the_key_to_flexibility"><a class="anchor" href="#_standard_formats_the_key_to_flexibility"></a>Standard Formats: The Key to Flexibility</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One of Istio&#8217;s greatest strengths is its use of standard, open formats for all observability signals. This standardization provides several benefits:</p>
+</div>
+<div class="sect2">
+<h3 id="_vendor_independence"><a class="anchor" href="#_vendor_independence"></a>Vendor Independence</h3>
+<div class="paragraph">
+<p>By using standard formats, you&#8217;re not locked into a specific vendor or tool. You can:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Start with local tools (Kiali, Tempo) for development</p>
+</li>
+<li>
+<p>Migrate to enterprise APM solutions for production</p>
+</li>
+<li>
+<p>Use multiple tools simultaneously</p>
+</li>
+<li>
+<p>Switch tools without changing your application code</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tool_ecosystem"><a class="anchor" href="#_tool_ecosystem"></a>Tool Ecosystem</h3>
+<div class="paragraph">
+<p>Standard formats mean you can leverage the entire ecosystem of observability tools:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Open-source tools</strong>: Prometheus, Grafana, Jaeger, Tempo, Kiali</p>
+</li>
+<li>
+<p><strong>Commercial APM solutions</strong>: Datadog, New Relic, Dynatrace, Splunk</p>
+</li>
+<li>
+<p><strong>Cloud-native tools</strong>: AWS CloudWatch, Google Cloud Operations, Azure Monitor</p>
+</li>
+<li>
+<p><strong>Custom solutions</strong>: Build your own dashboards and analytics</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_interoperability"><a class="anchor" href="#_interoperability"></a>Interoperability</h3>
+<div class="paragraph">
+<p>Standard formats enable interoperability between tools:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Metrics from Istio can feed into any Prometheus-compatible system</p>
+</li>
+<li>
+<p>Traces can be exported to any OpenTelemetry-compatible backend</p>
+</li>
+<li>
+<p>Logs can be consumed by any log aggregation system</p>
+</li>
+<li>
+<p>You can mix and match tools based on your needs</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_opentelemetry_the_universal_observability_standard"><a class="anchor" href="#_opentelemetry_the_universal_observability_standard"></a>OpenTelemetry: The Universal Observability Standard</h3>
+<div class="paragraph">
+<p>OpenTelemetry (OTel) is an open-source observability framework that provides a unified standard for collecting telemetry data. It&#8217;s becoming the industry standard for observability instrumentation and is increasingly supported by Istio and the broader observability ecosystem.</p>
+</div>
+<div class="paragraph">
+<p>OpenTelemetry provides:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Unified APIs</strong>: Standard APIs for metrics, traces, and logs across multiple languages</p>
+</li>
+<li>
+<p><strong>Vendor-Neutral</strong>: Not tied to any specific vendor or backend</p>
+</li>
+<li>
+<p><strong>Instrumentation Libraries</strong>: Pre-built instrumentation for common frameworks and libraries</p>
+</li>
+<li>
+<p><strong>Multiple Export Formats</strong>: Can export to Prometheus, Jaeger, Zipkin, and many other backends</p>
+</li>
+<li>
+<p><strong>Future-Proof</strong>: Actively developed and widely adopted across the industry</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Istio&#8217;s support for OpenTelemetry means:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Traces can be exported in OTLP (OpenTelemetry Protocol) format</p>
+</li>
+<li>
+<p>Metrics can be collected using OpenTelemetry collectors</p>
+</li>
+<li>
+<p>Logs can be structured using OpenTelemetry log formats</p>
+</li>
+<li>
+<p>Easy integration with OpenTelemetry-compatible APM solutions</p>
+</li>
+<li>
+<p>Ability to correlate data across different observability signals</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>By leveraging OpenTelemetry, you gain maximum flexibility to choose your observability tools while ensuring your instrumentation remains portable and future-proof.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_local_exploration_kiali_and_tempo"><a class="anchor" href="#_local_exploration_kiali_and_tempo"></a>Local Exploration: Kiali and Tempo</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For development and local environments, Kiali and Tempo provide powerful, integrated observability capabilities.</p>
+</div>
+<div class="sect2">
+<h3 id="_kiali_service_mesh_observability"><a class="anchor" href="#_kiali_service_mesh_observability"></a>Kiali: Service Mesh Observability</h3>
+<div class="paragraph">
+<p>Kiali is a web-based console for Istio service mesh observability. It provides:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Service Graph</strong>: Visual representation of service dependencies</p>
+</li>
+<li>
+<p><strong>Metrics Dashboard</strong>: Pre-built dashboards for key metrics</p>
+</li>
+<li>
+<p><strong>Trace Visualization</strong>: View and analyze distributed traces</p>
+</li>
+<li>
+<p><strong>Health Overview</strong>: Service health status at a glance</p>
+</li>
+<li>
+<p><strong>Configuration Validation</strong>: Validate Istio configuration</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Kiali is particularly valuable because it:<br>
+* Understands Istio-specific concepts<br>
+* Provides context-aware visualizations<br>
+* Integrates metrics, traces, and configuration<br>
+* Requires no additional configuration</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tempo_distributed_tracing_backend"><a class="anchor" href="#_tempo_distributed_tracing_backend"></a>Tempo: Distributed Tracing Backend</h3>
+<div class="paragraph">
+<p>Tempo is Grafana&#8217;s open-source distributed tracing backend. It provides:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>High-performance trace storage</strong>: Efficient storage of trace data</p>
+</li>
+<li>
+<p><strong>Grafana Integration</strong>: Native integration with Grafana dashboards</p>
+</li>
+<li>
+<p><strong>Trace Correlation</strong>: Correlate traces with metrics and logs</p>
+</li>
+<li>
+<p><strong>Simple Architecture</strong>: Easy to deploy and operate</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Tempo is ideal for:<br>
+* Organizations already using Grafana<br>
+* Teams wanting open-source solutions<br>
+* Environments requiring cost-effective trace storage<br>
+* Integration with existing observability stacks</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_remote_apm_integration"><a class="anchor" href="#_remote_apm_integration"></a>Remote APM Integration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For production environments, enterprise APM solutions provide advanced capabilities beyond what local tools offer.</p>
+</div>
+<div class="sect2">
+<h3 id="_why_use_remote_apm"><a class="anchor" href="#_why_use_remote_apm"></a>Why Use Remote APM?</h3>
+<div class="paragraph">
+<p>Remote APM solutions offer:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Scalability</strong>: Handle large-scale deployments</p>
+</li>
+<li>
+<p><strong>Advanced Analytics</strong>: Machine learning and AI-powered insights</p>
+</li>
+<li>
+<p><strong>Enterprise Features</strong>: SSO, RBAC, compliance, and governance</p>
+</li>
+<li>
+<p><strong>Long-term Storage</strong>: Retain data for extended periods</p>
+</li>
+<li>
+<p><strong>Cross-platform Correlation</strong>: Correlate data across multiple systems</p>
+</li>
+<li>
+<p><strong>Professional Support</strong>: Vendor support and SLAs</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integration_patterns"><a class="anchor" href="#_integration_patterns"></a>Integration Patterns</h3>
+<div class="paragraph">
+<p>Istio observability data can be integrated with APM solutions through:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Metrics Exporters</strong>: Export Prometheus metrics to APM platforms</p>
+</li>
+<li>
+<p><strong>Trace Exporters</strong>: Send traces via OpenTelemetry or native protocols</p>
+</li>
+<li>
+<p><strong>Log Forwarders</strong>: Forward logs using standard protocols</p>
+</li>
+<li>
+<p><strong>API Integration</strong>: Use APM APIs to push or pull data</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_choosing_the_right_apm"><a class="anchor" href="#_choosing_the_right_apm"></a>Choosing the Right APM</h3>
+<div class="paragraph">
+<p>When selecting an APM solution, consider:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Data Volume</strong>: Can it handle your scale?</p>
+</li>
+<li>
+<p><strong>Retention</strong>: How long can you retain data?</p>
+</li>
+<li>
+<p><strong>Cost</strong>: Pricing model and total cost of ownership</p>
+</li>
+<li>
+<p><strong>Features</strong>: Does it provide the analytics you need?</p>
+</li>
+<li>
+<p><strong>Integration</strong>: How easily does it integrate with Istio?</p>
+</li>
+<li>
+<p><strong>Vendor Lock-in</strong>: Can you migrate if needed?</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_putting_microservices_under_a_microscope"><a class="anchor" href="#_putting_microservices_under_a_microscope"></a>Putting Microservices Under a Microscope</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The combination of metrics, traces, and logs from Istio provides unprecedented visibility into your microservices architecture. This observability enables you to:</p>
+</div>
+<div class="sect2">
+<h3 id="_understand_system_behavior"><a class="anchor" href="#_understand_system_behavior"></a>Understand System Behavior</h3>
+<div class="paragraph">
+<p>With comprehensive observability, you can:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Identify Bottlenecks</strong>: See exactly where requests are slow</p>
+</li>
+<li>
+<p><strong>Understand Dependencies</strong>: Visualize how services interact</p>
+</li>
+<li>
+<p><strong>Detect Anomalies</strong>: Identify unusual patterns and behaviors</p>
+</li>
+<li>
+<p><strong>Track Changes</strong>: Understand the impact of deployments</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_debug_issues_quickly"><a class="anchor" href="#_debug_issues_quickly"></a>Debug Issues Quickly</h3>
+<div class="paragraph">
+<p>When problems occur, observability helps you:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Trace Root Causes</strong>: Follow requests through the system to find issues</p>
+</li>
+<li>
+<p><strong>Correlate Events</strong>: Connect metrics, traces, and logs to understand failures</p>
+</li>
+<li>
+<p><strong>Isolate Problems</strong>: Quickly identify which service is causing issues</p>
+</li>
+<li>
+<p><strong>Validate Fixes</strong>: Confirm that changes resolve problems</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_optimize_performance"><a class="anchor" href="#_optimize_performance"></a>Optimize Performance</h3>
+<div class="paragraph">
+<p>Observability data enables optimization:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Identify Slow Operations</strong>: Find operations that need optimization</p>
+</li>
+<li>
+<p><strong>Understand Resource Usage</strong>: See which services consume the most resources</p>
+</li>
+<li>
+<p><strong>Validate Improvements</strong>: Measure the impact of optimizations</p>
+</li>
+<li>
+<p><strong>Plan Capacity</strong>: Use historical data to plan for growth</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ensure_reliability"><a class="anchor" href="#_ensure_reliability"></a>Ensure Reliability</h3>
+<div class="paragraph">
+<p>Observability supports reliability:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Monitor SLOs</strong>: Track service level objectives</p>
+</li>
+<li>
+<p><strong>Detect Degradation</strong>: Identify issues before they become outages</p>
+</li>
+<li>
+<p><strong>Validate Resilience</strong>: Confirm that circuit breakers and retries work</p>
+</li>
+<li>
+<p><strong>Audit Security</strong>: Review access patterns and security events</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_best_practices_for_observability"><a class="anchor" href="#_best_practices_for_observability"></a>Best Practices for Observability</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To get the most value from Istio&#8217;s observability features:</p>
+</div>
+<div class="sect2">
+<h3 id="_start_with_the_basics"><a class="anchor" href="#_start_with_the_basics"></a>Start with the Basics</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Begin with Kiali for a quick overview</p>
+</li>
+<li>
+<p>Enable access logging for key services</p>
+</li>
+<li>
+<p>Set up basic metrics dashboards</p>
+</li>
+<li>
+<p>Configure trace sampling appropriately</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_use_standard_formats"><a class="anchor" href="#_use_standard_formats"></a>Use Standard Formats</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Stick with Prometheus for metrics</p>
+</li>
+<li>
+<p>Use OpenTelemetry for traces</p>
+</li>
+<li>
+<p>Use structured logging (JSON)</p>
+</li>
+<li>
+<p>This ensures future flexibility</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sample_appropriately"><a class="anchor" href="#_sample_appropriately"></a>Sample Appropriately</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Don&#8217;t trace every request (too expensive)</p>
+</li>
+<li>
+<p>Use sampling rates (e.g., 1% or 10%)</p>
+</li>
+<li>
+<p>Increase sampling for error cases</p>
+</li>
+<li>
+<p>Adjust based on traffic volume</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_correlate_signals"><a class="anchor" href="#_correlate_signals"></a>Correlate Signals</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Use trace IDs to correlate logs and traces</p>
+</li>
+<li>
+<p>Link metrics to specific services and operations</p>
+</li>
+<li>
+<p>Create dashboards that combine metrics, traces, and logs</p>
+</li>
+<li>
+<p>Use consistent labeling across all signals</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_monitor_what_matters"><a class="anchor" href="#_monitor_what_matters"></a>Monitor What Matters</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Focus on business-critical metrics</p>
+</li>
+<li>
+<p>Set up alerts for important thresholds</p>
+</li>
+<li>
+<p>Track user-facing metrics (latency, errors)</p>
+</li>
+<li>
+<p>Monitor resource utilization</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this module, you have learned:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Istio provides three fundamental observability signals: metrics, traces, and logs</p>
+</li>
+<li>
+<p>These signals are generated automatically without application code changes</p>
+</li>
+<li>
+<p>All signals use standard formats (Prometheus, OpenTelemetry, structured logs)</p>
+</li>
+<li>
+<p>Local tools like Kiali and Tempo provide powerful exploration capabilities</p>
+</li>
+<li>
+<p>Remote APM solutions offer enterprise-grade observability for production</p>
+</li>
+<li>
+<p>Standard formats provide flexibility and vendor independence</p>
+</li>
+<li>
+<p>Comprehensive observability enables you to understand, debug, optimize, and secure your microservices</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Observability is not just about collecting data—it&#8217;s about gaining insights that enable you to build, operate, and improve your microservices architecture with confidence.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Congratulations! You have completed the Istio Service Mesh Workshop. Throughout these four modules, you have learned:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Module 1</strong>: The fundamentals of Istio, Envoy, and sidecar architecture</p>
+</li>
+<li>
+<p><strong>Module 2</strong>: Traffic management with Gateways and VirtualServices</p>
+</li>
+<li>
+<p><strong>Module 3</strong>: Advanced traffic management and security with DestinationRules, authentication, and authorization</p>
+</li>
+<li>
+<p><strong>Module 4</strong>: Observability with metrics, traces, and logs</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You now have the knowledge and skills to deploy, configure, secure, and observe Istio service mesh in your Kubernetes environment. Continue practicing with the exercises, explore the advanced features, and leverage Istio&#8217;s capabilities to build resilient, secure, and observable microservices architectures.</p>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="module-03-exercises.html" class="query-params-link">Exercises</a></span>
+  <span class="next"><a href="module-04-exercises.html" class="query-params-link">Exercises</a></span>
+</nav>
+</article>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>  </div>
+</main>
+</div>
+<footer class="footer">
+  <a href="https://demo.redhat.com" target="_blank" class="poweredBy"><p>Powered by</p><div class="labInfo_poweredBy" style="display: block; width: 260px;"><svg class="labInfo_poweredByLogo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1508.5 178.739"><g fill="#111"><path d="M316.6 63.2v-56H342a21.279 21.279 0 0 1 7.8 1.3 18.111 18.111 0 0 1 5.9 3.5 15.577 15.577 0 0 1 5 11.8 15.051 15.051 0 0 1-3.1 9.5 16.836 16.836 0 0 1-8.4 5.8l12.5 24.1h-9.3l-11.6-23H325v23Zm24.7-48.6H325v18.7h16.3q5.25 0 8.1-2.7a8.7 8.7 0 0 0 2.8-6.6 8.7 8.7 0 0 0-2.8-6.6c-1.8-1.9-4.5-2.8-8.1-2.8ZM364.1 42.8a20.674 20.674 0 0 1 1.6-8.2 20.288 20.288 0 0 1 4.3-6.7 19.92 19.92 0 0 1 6.5-4.5 19.718 19.718 0 0 1 8-1.6 18.463 18.463 0 0 1 7.8 1.6 18.677 18.677 0 0 1 6.2 4.5 20.927 20.927 0 0 1 4.1 6.8 23.2 23.2 0 0 1 1.5 8.4v2.3H372a13.822 13.822 0 0 0 4.6 8.4 13.6 13.6 0 0 0 9.1 3.3 15.553 15.553 0 0 0 5.7-1 12.858 12.858 0 0 0 4.6-2.6l5.1 5a25.983 25.983 0 0 1-7.4 4.1 24.69 24.69 0 0 1-8.4 1.3 21.306 21.306 0 0 1-8.4-1.6 22.763 22.763 0 0 1-6.8-4.4 20.788 20.788 0 0 1-4.5-6.7 23.2 23.2 0 0 1-1.5-8.4Zm20.2-14.2a11.527 11.527 0 0 0-8 3 13.046 13.046 0 0 0-4.2 7.8h24.2a13.091 13.091 0 0 0-4.2-7.8 11.106 11.106 0 0 0-7.8-3ZM443.1 63.2v-3.8a19.448 19.448 0 0 1-5.8 3.3 18.924 18.924 0 0 1-6.7 1.2 19.824 19.824 0 0 1-14.6-6.1 22.268 22.268 0 0 1-4.4-6.7 21.812 21.812 0 0 1 0-16.4A20.534 20.534 0 0 1 416 28a19.335 19.335 0 0 1 6.6-4.5 20.334 20.334 0 0 1 8.2-1.6 20.7 20.7 0 0 1 6.6 1 19.415 19.415 0 0 1 5.7 3V7.2l8-1.8v57.8Zm-25.2-20.4a13.718 13.718 0 0 0 4 10.1 13.45 13.45 0 0 0 9.8 4.1 14.956 14.956 0 0 0 6.4-1.3 15.954 15.954 0 0 0 4.9-3.6V33.6a14.988 14.988 0 0 0-4.9-3.5 15.271 15.271 0 0 0-6.4-1.3 13.423 13.423 0 0 0-9.9 4 13.806 13.806 0 0 0-3.9 10ZM478.1 63.2v-56h8.4v24h29.8v-24h8.4v56h-8.4V38.8h-29.8v24.4ZM547.2 64a16.483 16.483 0 0 1-10.8-3.5 11.037 11.037 0 0 1-4.2-8.9 10.375 10.375 0 0 1 4.7-9.2 20.76 20.76 0 0 1 11.8-3.2 27.841 27.841 0 0 1 5.8.6 27.374 27.374 0 0 1 5.3 1.6v-4.3a8.143 8.143 0 0 0-2.6-6.5 11.452 11.452 0 0 0-7.4-2.2 20.788 20.788 0 0 0-6 .9 34.616 34.616 0 0 0-6.6 2.6l-3-6a54.169 54.169 0 0 1 8.4-3.1 33.18 33.18 0 0 1 8.3-1.1c5.2 0 9.3 1.3 12.2 3.8s4.4 6.1 4.4 10.8v27h-7.8v-3.5a19.441 19.441 0 0 1-5.8 3.2 23.54 23.54 0 0 1-6.7 1Zm-7.3-12.6a5.646 5.646 0 0 0 2.6 4.8 11.193 11.193 0 0 0 6.6 1.8 16.256 16.256 0 0 0 5.9-1 14.449 14.449 0 0 0 4.9-2.9V47a19.778 19.778 0 0 0-4.8-1.8 24.933 24.933 0 0 0-5.7-.6 11.859 11.859 0 0 0-6.8 1.8 5.728 5.728 0 0 0-2.7 5ZM580.6 53.2v-24H572v-6.7h8.6V12.1l7.9-1.9v12.3h12v6.7h-12v22.1a5.94 5.94 0 0 0 1.4 4.4c.9.9 2.5 1.3 4.6 1.3a23.637 23.637 0 0 0 3-.2 10.857 10.857 0 0 0 2.8-.8v6.7a19.28 19.28 0 0 1-3.8.9 27.484 27.484 0 0 1-3.8.3c-3.9 0-7-.9-9-2.8-2-1.7-3.1-4.4-3.1-7.9Z"></path></g><path d="M127 90.2c12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4L149.8 37c-1.7-7.1-3.2-10.3-15.7-16.6-9.7-5-30.8-13.1-37.1-13.1-5.8 0-7.5 7.5-14.4 7.5-6.7 0-11.6-5.6-17.9-5.6-6 0-9.9 4.1-12.9 12.5 0 0-8.4 23.7-9.5 27.2a4.216 4.216 0 0 0-.3 1.9c0 9.2 36.3 39.4 85 39.4Zm32.5-11.4c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3C21.8 58.8 0 61.8 0 81c0 31.5 74.6 70.3 133.7 70.3 45.3 0 56.7-20.5 56.7-36.6-.1-12.8-11-27.3-30.9-35.9Z" fill="#e00"></path><path d="M159.5 78.8c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3l3.7-9.1a4.877 4.877 0 0 0-.3 2c0 9.2 36.3 39.4 85 39.4 12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4Z"></path><path d="M253.5 158.7a2.22 2.22 0 0 1-2.2-2.2V2.2a2.2 2.2 0 0 1 4.4 0v154.2a2.242 2.242 0 0 1-2.2 2.3Z" fill="#111"></path><text data-name="Demo Platform" transform="translate(1186 149)" fill="#111" font-size="82" font-family="'RedHatDisplay', 'Overpass', overpass, helvetica, arial, sans-serif" font-weight="700"><tspan x="-877.892" y="0">Demo Platform</tspan></text></svg></div></div>
+</footer>
+<script src="../_/js/vendor/clipboard.js"></script>
+<script src="../_/js/site.js"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+  </body>
+</html>

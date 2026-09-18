@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Module 3: Exercises :: Istio Service Mesh Workshop</title>
+    <link rel="canonical" href="https://naeemarsalan.github.io/istio-workshop/modules/module-03-exercises.html">
+    <link rel="prev" href="module-03-content.html">
+    <link rel="next" href="module-04-content.html">
+    <meta name="generator" content="Antora 3.2.0">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://demo.redhat.com" target="_blank" style="margin-left: 5%;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1508.5 178.739" style="width: 278px;"><g fill="#fff"><path d="M316.6 63.2v-56H342a21.279 21.279 0 0 1 7.8 1.3 18.111 18.111 0 0 1 5.9 3.5 15.577 15.577 0 0 1 5 11.8 15.051 15.051 0 0 1-3.1 9.5 16.836 16.836 0 0 1-8.4 5.8l12.5 24.1h-9.3l-11.6-23H325v23Zm24.7-48.6H325v18.7h16.3q5.25 0 8.1-2.7a8.7 8.7 0 0 0 2.8-6.6 8.7 8.7 0 0 0-2.8-6.6c-1.8-1.9-4.5-2.8-8.1-2.8ZM364.1 42.8a20.674 20.674 0 0 1 1.6-8.2 20.288 20.288 0 0 1 4.3-6.7 19.92 19.92 0 0 1 6.5-4.5 19.718 19.718 0 0 1 8-1.6 18.463 18.463 0 0 1 7.8 1.6 18.677 18.677 0 0 1 6.2 4.5 20.927 20.927 0 0 1 4.1 6.8 23.2 23.2 0 0 1 1.5 8.4v2.3H372a13.822 13.822 0 0 0 4.6 8.4 13.6 13.6 0 0 0 9.1 3.3 15.553 15.553 0 0 0 5.7-1 12.858 12.858 0 0 0 4.6-2.6l5.1 5a25.983 25.983 0 0 1-7.4 4.1 24.69 24.69 0 0 1-8.4 1.3 21.306 21.306 0 0 1-8.4-1.6 22.763 22.763 0 0 1-6.8-4.4 20.788 20.788 0 0 1-4.5-6.7 23.2 23.2 0 0 1-1.5-8.4Zm20.2-14.2a11.527 11.527 0 0 0-8 3 13.046 13.046 0 0 0-4.2 7.8h24.2a13.091 13.091 0 0 0-4.2-7.8 11.106 11.106 0 0 0-7.8-3ZM443.1 63.2v-3.8a19.448 19.448 0 0 1-5.8 3.3 18.924 18.924 0 0 1-6.7 1.2 19.824 19.824 0 0 1-14.6-6.1 22.268 22.268 0 0 1-4.4-6.7 21.812 21.812 0 0 1 0-16.4A20.534 20.534 0 0 1 416 28a19.335 19.335 0 0 1 6.6-4.5 20.334 20.334 0 0 1 8.2-1.6 20.7 20.7 0 0 1 6.6 1 19.415 19.415 0 0 1 5.7 3V7.2l8-1.8v57.8Zm-25.2-20.4a13.718 13.718 0 0 0 4 10.1 13.45 13.45 0 0 0 9.8 4.1 14.956 14.956 0 0 0 6.4-1.3 15.954 15.954 0 0 0 4.9-3.6V33.6a14.988 14.988 0 0 0-4.9-3.5 15.271 15.271 0 0 0-6.4-1.3 13.423 13.423 0 0 0-9.9 4 13.806 13.806 0 0 0-3.9 10ZM478.1 63.2v-56h8.4v24h29.8v-24h8.4v56h-8.4V38.8h-29.8v24.4ZM547.2 64a16.483 16.483 0 0 1-10.8-3.5 11.037 11.037 0 0 1-4.2-8.9 10.375 10.375 0 0 1 4.7-9.2 20.76 20.76 0 0 1 11.8-3.2 27.841 27.841 0 0 1 5.8.6 27.374 27.374 0 0 1 5.3 1.6v-4.3a8.143 8.143 0 0 0-2.6-6.5 11.452 11.452 0 0 0-7.4-2.2 20.788 20.788 0 0 0-6 .9 34.616 34.616 0 0 0-6.6 2.6l-3-6a54.169 54.169 0 0 1 8.4-3.1 33.18 33.18 0 0 1 8.3-1.1c5.2 0 9.3 1.3 12.2 3.8s4.4 6.1 4.4 10.8v27h-7.8v-3.5a19.441 19.441 0 0 1-5.8 3.2 23.54 23.54 0 0 1-6.7 1Zm-7.3-12.6a5.646 5.646 0 0 0 2.6 4.8 11.193 11.193 0 0 0 6.6 1.8 16.256 16.256 0 0 0 5.9-1 14.449 14.449 0 0 0 4.9-2.9V47a19.778 19.778 0 0 0-4.8-1.8 24.933 24.933 0 0 0-5.7-.6 11.859 11.859 0 0 0-6.8 1.8 5.728 5.728 0 0 0-2.7 5ZM580.6 53.2v-24H572v-6.7h8.6V12.1l7.9-1.9v12.3h12v6.7h-12v22.1a5.94 5.94 0 0 0 1.4 4.4c.9.9 2.5 1.3 4.6 1.3a23.637 23.637 0 0 0 3-.2 10.857 10.857 0 0 0 2.8-.8v6.7a19.28 19.28 0 0 1-3.8.9 27.484 27.484 0 0 1-3.8.3c-3.9 0-7-.9-9-2.8-2-1.7-3.1-4.4-3.1-7.9Z"></path></g><path d="M127 90.2c12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4L149.8 37c-1.7-7.1-3.2-10.3-15.7-16.6-9.7-5-30.8-13.1-37.1-13.1-5.8 0-7.5 7.5-14.4 7.5-6.7 0-11.6-5.6-17.9-5.6-6 0-9.9 4.1-12.9 12.5 0 0-8.4 23.7-9.5 27.2a4.216 4.216 0 0 0-.3 1.9c0 9.2 36.3 39.4 85 39.4Zm32.5-11.4c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3C21.8 58.8 0 61.8 0 81c0 31.5 74.6 70.3 133.7 70.3 45.3 0 56.7-20.5 56.7-36.6-.1-12.8-11-27.3-30.9-35.9Z" fill="#e00"></path><path d="M159.5 78.8c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3l3.7-9.1a4.877 4.877 0 0 0-.3 2c0 9.2 36.3 39.4 85 39.4 12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4Z"></path><path d="M253.5 158.7a2.22 2.22 0 0 1-2.2-2.2V2.2a2.2 2.2 0 0 1 4.4 0v154.2a2.242 2.242 0 0 1-2.2 2.3Z" fill="#fff"></path><text data-name="Demo Platform" transform="translate(1186 149)" fill="#fff" font-size="82" font-family="'RedHatDisplay', 'Overpass', overpass, helvetica, arial, sans-serif" font-weight="700"><tspan x="-877.892" y="0">Demo Platform</tspan></text></svg>
+      </a>
+      <a class="navbar-item site-title" target="__blank" style="color: #fff !important;" href="https://naeemarsalan.github.io/istio-workshop">Istio Service Mesh Workshop</a>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="modules" data-version="master">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html" class=" query-params-link">Istio Service Mesh Workshop</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 1: Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-01-content.html">Content</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-01-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 2: Traffic Management</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-02-content.html">Content</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-02-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 3: Advanced Traffic Management and Security</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-03-content.html">Content</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="module-03-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Module 4: Observability</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-04-content.html">Content</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="module-04-exercises.html">Exercises</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <span class="title">Istio Service Mesh Workshop</span>
+      <ul class="versions">
+        <li class="version is-current">
+          <a href="index.html">master</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Istio Service Mesh Workshop</a></li>
+    <li>Module 3: Advanced Traffic Management and Security</li>
+    <li><a href="module-03-exercises.html">Exercises</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<article class="doc">
+<h1 class="page">Module 3: Exercises</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This exercise section provides hands-on practice with advanced DestinationRule features and Istio security. You will learn how to configure load balancing, implement failover and circuit breaking, set up request authentication, and create authorization policies.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before starting these exercises, ensure you have:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Access to an OpenShift cluster with Service Mesh 3 (Istio &gt;= 1.23) installed</p>
+</li>
+<li>
+<p>Your namespace (<code>$NAMESPACE</code>) configured with sidecar injection enabled</p>
+</li>
+<li>
+<p>The <code>oc</code> CLI tool installed and configured</p>
+</li>
+<li>
+<p>Basic understanding of DestinationRules, VirtualServices, and Kubernetes Services</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_1_configure_load_balancing_in_destinationrules"><a class="anchor" href="#_exercise_1_configure_load_balancing_in_destinationrules"></a>Exercise 1: Configure Load Balancing in DestinationRules</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you will configure different load balancing algorithms in DestinationRules.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_set_your_namespace"><a class="anchor" href="#_step_1_set_your_namespace"></a>Step 1: Set Your Namespace</h3>
+<div class="paragraph">
+<p>Ensure your namespace variable is set:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export NAMESPACE={USER}-sandbox</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_deploy_a_multi_pod_service"><a class="anchor" href="#_step_2_deploy_a_multi_pod_service"></a>Step 2: Deploy a Multi-Pod Service</h3>
+<div class="paragraph">
+<p>Deploy a service with multiple replicas to observe load balancing:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loadtest-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=loadtest version=v1 pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadtest-service
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: loadtest
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: loadtest
+        version: v1
+    spec:
+      containers:
+      - name: nginx
+        image: nginxinc/nginx-unprivileged:alpine
+        ports:
+        - containerPort: 8080
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: loadtest-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loadtest-service
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: loadtest
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: http
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Wait for all pods to be ready:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get pods -n $NAMESPACE -l app=loadtest</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_create_destinationrule_with_round_robin_load_balancing"><a class="anchor" href="#_step_3_create_destinationrule_with_round_robin_load_balancing"></a>Step 3: Create DestinationRule with Round-Robin Load Balancing</h3>
+<div class="paragraph">
+<p>Create a DestinationRule with round-robin load balancing (default):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: loadtest-service
+  namespace: ${NAMESPACE}
+spec:
+  host: loadtest-service
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify the DestinationRule:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get destinationrule loadtest-service -n $NAMESPACE -o yaml</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_test_round_robin_load_balancing"><a class="anchor" href="#_step_4_test_round_robin_load_balancing"></a>Step 4: Test Round-Robin Load Balancing</h3>
+<div class="paragraph">
+<p>Send multiple requests and observe the distribution. Check the logs to see which pod handles each request:</p>
+</div>
+<div class="paragraph">
+<p>Each pod reports its own name in the response, so you can count the distribution directly. Run the requests from a pod that is already in the mesh rather than starting one short-lived <code>oc run</code> pod per request:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">CLIENT=$(oc get pod -n $NAMESPACE -l app=test-app-2 -o jsonpath='{.items[0].metadata.name}')
+
+oc exec -n $NAMESPACE $CLIENT -c test-container -- \
+  sh -c 'for i in $(seq 1 30); do curl -s http://loadtest-service; done' \
+  | grep -oE 'pod=[a-z0-9-]+' | sort | uniq -c</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With <code>ROUND_ROBIN</code> across three pods the split is exact:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>     10 pod=loadtest-service-8bb5b4478-9xpkn
+     10 pod=loadtest-service-8bb5b4478-d9bbl
+     10 pod=loadtest-service-8bb5b4478-dsm62</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Repeat the same command after each load-balancer change below. <code>LEAST_CONN</code> and <code>RANDOM</code> give an uneven but roughly balanced spread (for example 11/7/12), because neither is strictly cyclic.</p>
+</div>
+<div class="paragraph">
+<p>You can also confirm the requests in the access logs:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc logs -n $NAMESPACE -l app=loadtest -c istio-proxy --tail=20 | grep -i "GET"</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_change_to_least_connection_load_balancing"><a class="anchor" href="#_step_5_change_to_least_connection_load_balancing"></a>Step 5: Change to Least-Connection Load Balancing</h3>
+<div class="paragraph">
+<p>Update the DestinationRule to use least-connection load balancing:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: loadtest-service
+  namespace: ${NAMESPACE}
+spec:
+  host: loadtest-service
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_CONN
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Test the least-connection algorithm:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">for i in {1..9}; do
+  oc run curl-test-$i --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -s http://loadtest-service &gt; /dev/null
+done</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_6_configure_random_load_balancing"><a class="anchor" href="#_step_6_configure_random_load_balancing"></a>Step 6: Configure Random Load Balancing</h3>
+<div class="paragraph">
+<p>Update to random load balancing:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: loadtest-service
+  namespace: ${NAMESPACE}
+spec:
+  host: loadtest-service
+  trafficPolicy:
+    loadBalancer:
+      simple: RANDOM
+EOF</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_2_implement_failover_and_outlier_detection"><a class="anchor" href="#_exercise_2_implement_failover_and_outlier_detection"></a>Exercise 2: Implement Failover and Outlier Detection</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you will configure outlier detection and failover behavior.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_deploy_primary_and_backup_services"><a class="anchor" href="#_step_1_deploy_primary_and_backup_services"></a>Step 1: Deploy Primary and Backup Services</h3>
+<div class="paragraph">
+<p>Deploy a primary service and a backup service:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: primary-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=primary version=v1 pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=backup version=v1 pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: primary-service
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: primary
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: primary
+        version: v1
+    spec:
+      containers:
+      - name: nginx
+        image: nginxinc/nginx-unprivileged:alpine
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: primary-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: primary-service
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: primary
+  ports:
+  - port: 80
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backup-service
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backup
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: backup
+        version: v1
+    spec:
+      containers:
+      - name: nginx
+        image: nginxinc/nginx-unprivileged:alpine
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: backup-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backup-service
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: backup
+  ports:
+  - port: 80
+    targetPort: 8080
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_create_destinationrule_with_outlier_detection"><a class="anchor" href="#_step_2_create_destinationrule_with_outlier_detection"></a>Step 2: Create DestinationRule with Outlier Detection</h3>
+<div class="paragraph">
+<p>Create a DestinationRule with outlier detection configured:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: primary-service
+  namespace: ${NAMESPACE}
+spec:
+  host: primary-service
+  trafficPolicy:
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 50
+  subsets:
+  - name: primary
+    labels:
+      version: v1
+  - name: backup
+    labels:
+      version: v1
+EOF</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Both subsets above select <code>version: v1</code>, and both are defined on the host <code>primary-service</code>. That means the <code>backup</code> subset resolves to the <strong>same</strong> pods as <code>primary</code> — this DestinationRule demonstrates the outlier-detection <strong>syntax</strong>, but it does not actually fail traffic over to <code>backup-service</code>. Real failover across services needs either distinct labels on one host, or locality-based failover.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_create_virtualservice_for_failover"><a class="anchor" href="#_step_3_create_virtualservice_for_failover"></a>Step 3: Create VirtualService for Failover</h3>
+<div class="paragraph">
+<p>Create a VirtualService that routes to the backup when primary fails:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: primary-service
+  namespace: ${NAMESPACE}
+spec:
+  hosts:
+  - primary-service
+  http:
+  - route:
+    - destination:
+        host: primary-service
+        subset: primary
+      weight: 100
+    fault:
+      delay:
+        percentage:
+          value: 50
+        fixedDelay: 5s
+    retries:
+      attempts: 3
+      perTryTimeout: 2s
+EOF</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The fault injection in this example simulates failures. In production, you would remove the fault section.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_verify_outlier_detection_configuration"><a class="anchor" href="#_step_4_verify_outlier_detection_configuration"></a>Step 4: Verify Outlier Detection Configuration</h3>
+<div class="paragraph">
+<p>Check the DestinationRule configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get destinationrule primary-service -n $NAMESPACE -o yaml</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_test_failover_behavior"><a class="anchor" href="#_step_5_test_failover_behavior"></a>Step 5: Test Failover Behavior</h3>
+<div class="paragraph">
+<p>Send requests and observe the behavior:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">for i in {1..10}; do
+  oc run curl-test-$i --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v http://primary-service --max-time 10
+done</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Check the logs to see outlier detection in action:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc logs -n $NAMESPACE -l app=primary -c istio-proxy --tail=30</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_3_implement_circuit_breaking"><a class="anchor" href="#_exercise_3_implement_circuit_breaking"></a>Exercise 3: Implement Circuit Breaking</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you will configure circuit breaking to prevent cascading failures.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_deploy_a_service_for_circuit_breaking"><a class="anchor" href="#_step_1_deploy_a_service_for_circuit_breaking"></a>Step 1: Deploy a Service for Circuit Breaking</h3>
+<div class="paragraph">
+<p>Deploy a service that we&#8217;ll use to test circuit breaking:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: circuit-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=circuit pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: circuit-service
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: circuit
+  template:
+    metadata:
+      labels:
+        app: circuit
+    spec:
+      containers:
+      - name: nginx
+        image: nginxinc/nginx-unprivileged:alpine
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: circuit-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: circuit-service
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: circuit
+  ports:
+  - port: 80
+    targetPort: 8080
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_create_destinationrule_with_circuit_breaking"><a class="anchor" href="#_step_2_create_destinationrule_with_circuit_breaking"></a>Step 2: Create DestinationRule with Circuit Breaking</h3>
+<div class="paragraph">
+<p>Create a DestinationRule with circuit breaking configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: circuit-service
+  namespace: ${NAMESPACE}
+spec:
+  host: circuit-service
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 2
+      http:
+        http1MaxPendingRequests: 2
+        http2MaxRequests: 2
+        maxRequestsPerConnection: 1
+    outlierDetection:
+      consecutive5xxErrors: 2
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 100
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_verify_circuit_breaking_configuration"><a class="anchor" href="#_step_3_verify_circuit_breaking_configuration"></a>Step 3: Verify Circuit Breaking Configuration</h3>
+<div class="paragraph">
+<p>Check the DestinationRule:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get destinationrule circuit-service -n $NAMESPACE -o yaml</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_test_circuit_breaking"><a class="anchor" href="#_step_4_test_circuit_breaking"></a>Step 4: Test Circuit Breaking</h3>
+<div class="paragraph">
+<p>Deploy a client that will generate load to test circuit breaking:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: circuit-client
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: circuit-client
+  template:
+    metadata:
+      labels:
+        app: circuit-client
+    spec:
+      containers:
+      - name: curl
+        image: curlimages/curl:latest
+        command: ["sleep", "3600"]
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Send multiple concurrent requests to trigger circuit breaking:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">POD_NAME=$(oc get pod -n $NAMESPACE -l app=circuit-client -o jsonpath='{.items[0].metadata.name}')
+oc exec -n $NAMESPACE $POD_NAME -- sh -c 'for i in $(seq 1 10); do curl -s http://circuit-service &amp; done; wait'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Check the logs to see circuit breaking behavior:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc logs -n $NAMESPACE -l app=circuit-client -c istio-proxy --tail=20
+oc logs -n $NAMESPACE -l app=circuit -c istio-proxy --tail=20</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_4_configure_request_authentication_with_jwt"><a class="anchor" href="#_exercise_4_configure_request_authentication_with_jwt"></a>Exercise 4: Configure Request Authentication with JWT</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you will set up RequestAuthentication to validate JWT tokens.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_deploy_a_test_application"><a class="anchor" href="#_step_1_deploy_a_test_application"></a>Step 1: Deploy a Test Application</h3>
+<div class="paragraph">
+<p>Deploy an application that will require authentication:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=auth-service pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+      - name: nginx
+        image: nginxinc/nginx-unprivileged:alpine
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: auth-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: auth-service
+  ports:
+  - port: 80
+    targetPort: 8080
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_create_a_simple_jwt_for_testing"><a class="anchor" href="#_step_2_create_a_simple_jwt_for_testing"></a>Step 2: Create a Simple JWT for Testing</h3>
+<div class="paragraph">
+<p>For this exercise, we&#8217;ll use a simple JWT issuer. In production, you would use a proper authentication service. Create a RequestAuthentication policy:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: jwt-auth
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    matchLabels:
+      app: auth-service
+  jwtRules:
+  - issuer: "testing@secure.istio.io"
+    jwksUri: "https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/jwks.json"
+EOF</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This uses Istio&#8217;s sample JWT for testing. In production, use your own JWT issuer and JWKS endpoint.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_verify_requestauthentication"><a class="anchor" href="#_step_3_verify_requestauthentication"></a>Step 3: Verify RequestAuthentication</h3>
+<div class="paragraph">
+<p>Check that the RequestAuthentication was created:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get requestauthentication -n $NAMESPACE
+oc get requestauthentication jwt-auth -n $NAMESPACE -o yaml</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_test_without_jwt_token"><a class="anchor" href="#_step_4_test_without_jwt_token"></a>Step 4: Test Without JWT Token</h3>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+A <code>RequestAuthentication</code> resource on its own does <strong>not</strong> require callers to present a token. It only says "if a token is present it must be valid". A request with <strong>no</strong> token is therefore still allowed through, and returns <code>200</code>. Only an <code>AuthorizationPolicy</code> (Exercise 5) can make a token mandatory. Expect:
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>no token &#8594; <code>200</code></p>
+</li>
+<li>
+<p>invalid token &#8594; <code>401</code></p>
+</li>
+<li>
+<p>valid token &#8594; <code>200</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Try to access the service without a JWT token:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v http://auth-service</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The request should succeed because RequestAuthentication only validates tokens if they are present. To require tokens, you need AuthorizationPolicy (covered in the next exercise).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_test_with_invalid_jwt_token"><a class="anchor" href="#_step_5_test_with_invalid_jwt_token"></a>Step 5: Test With Invalid JWT Token</h3>
+<div class="paragraph">
+<p>Test with an invalid token:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -H "Authorization: Bearer invalid-token" http://auth-service</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_6_test_with_valid_jwt_token"><a class="anchor" href="#_step_6_test_with_valid_jwt_token"></a>Step 6: Test With Valid JWT Token</h3>
+<div class="paragraph">
+<p>Get a sample JWT token from Istio&#8217;s test tokens:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/demo.jwt)
+echo $TOKEN</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Test with a valid token:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -H "Authorization: Bearer $TOKEN" http://auth-service</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_5_create_authorization_policies"><a class="anchor" href="#_exercise_5_create_authorization_policies"></a>Exercise 5: Create Authorization Policies</h2>
+<div class="sectionbody">
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+If Kyverno is installed on your cluster, the short name <code>authorizationpolicy</code> is ambiguous — it also matches <code>authorizationpolicies.envoy.kyverno.io</code>, and <code>oc get</code>/<code>oc delete authorizationpolicy</code> will silently act on the wrong resource. Check with <code>oc api-resources | grep authorizationpolicies</code>. When in doubt use the fully-qualified name:
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get authorizationpolicies.security.istio.io -n $NAMESPACE</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this exercise, you will create AuthorizationPolicies to control access to your services.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_create_an_authorizationpolicy_to_require_authentication"><a class="anchor" href="#_step_1_create_an_authorizationpolicy_to_require_authentication"></a>Step 1: Create an AuthorizationPolicy to Require Authentication</h3>
+<div class="paragraph">
+<p>Create an AuthorizationPolicy that requires a valid JWT token:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: require-jwt
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    matchLabels:
+      app: auth-service
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        requestPrincipals: ["*"]
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This policy allows requests from any authenticated principal (any valid JWT).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_test_authorization_policy"><a class="anchor" href="#_step_2_test_authorization_policy"></a>Step 2: Test Authorization Policy</h3>
+<div class="paragraph">
+<p>Try accessing without a token (should be denied):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v http://auth-service</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Try with a valid token (should be allowed):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/demo.jwt)
+oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -H "Authorization: Bearer $TOKEN" http://auth-service</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_create_method_based_authorization"><a class="anchor" href="#_step_3_create_method_based_authorization"></a>Step 3: Create Method-Based Authorization</h3>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<code>AuthorizationPolicy</code> resources with <code>action: ALLOW</code> are <strong>additive</strong> — a request is permitted if <strong>any</strong> ALLOW policy matches it. The <code>require-jwt</code> policy you created in Step 1 allows every method for any authenticated caller, so it will keep permitting <code>DELETE</code> no matter what the policy below says, and the test in Step 4 will return <code>200</code> instead of <code>403</code>. Remove the broader policy first:
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete authorizationpolicies.security.istio.io require-jwt -n $NAMESPACE</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Authorization changes take a few seconds to reach every sidecar. If a test returns the old result, wait ~30 seconds and try again before assuming the policy is wrong.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Create an AuthorizationPolicy that only allows GET and POST methods:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-methods
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    matchLabels:
+      app: auth-service
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        requestPrincipals: ["*"]
+    to:
+    - operation:
+        methods: ["GET", "POST"]
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_test_method_based_authorization"><a class="anchor" href="#_step_4_test_method_based_authorization"></a>Step 4: Test Method-Based Authorization</h3>
+<div class="paragraph">
+<p>Test with GET (should work):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/demo.jwt)
+oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -X GET -H "Authorization: Bearer $TOKEN" http://auth-service</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Test with DELETE (should be denied):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -X DELETE -H "Authorization: Bearer $TOKEN" http://auth-service</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_create_path_based_authorization"><a class="anchor" href="#_step_5_create_path_based_authorization"></a>Step 5: Create Path-Based Authorization</h3>
+<div class="paragraph">
+<p>Create an AuthorizationPolicy that restricts access to specific paths:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-paths
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    matchLabels:
+      app: auth-service
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        requestPrincipals: ["*"]
+    to:
+    - operation:
+        paths: ["/api/*", "/public/*"]
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_6_create_a_deny_policy"><a class="anchor" href="#_step_6_create_a_deny_policy"></a>Step 6: Create a Deny Policy</h3>
+<div class="paragraph">
+<p>Create an explicit deny policy for admin endpoints:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-admin
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    matchLabels:
+      app: auth-service
+  action: DENY
+  rules:
+  - to:
+    - operation:
+        paths: ["/admin/*"]
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Test the deny policy:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/demo.jwt)
+oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -H "Authorization: Bearer $TOKEN" http://auth-service/admin/test</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_7_verify_all_authorization_policies"><a class="anchor" href="#_step_7_verify_all_authorization_policies"></a>Step 7: Verify All Authorization Policies</h3>
+<div class="paragraph">
+<p>List all AuthorizationPolicies:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get authorizationpolicy -n $NAMESPACE</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>View the configurations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get authorizationpolicy -n $NAMESPACE -o yaml</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_6_combine_authentication_and_authorization"><a class="anchor" href="#_exercise_6_combine_authentication_and_authorization"></a>Exercise 6: Combine Authentication and Authorization</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you will combine RequestAuthentication and AuthorizationPolicy for complete security.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_deploy_a_new_service"><a class="anchor" href="#_step_1_deploy_a_new_service"></a>Step 1: Deploy a New Service</h3>
+<div class="paragraph">
+<p>Deploy a service for the combined authentication and authorization exercise:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: secure-conf
+  namespace: ${NAMESPACE}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "app=secure-service pod=\$hostname uri=\$request_uri\n";
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secure-service
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: secure-service
+  template:
+    metadata:
+      labels:
+        app: secure-service
+    spec:
+      containers:
+      - name: nginx
+        image: nginxinc/nginx-unprivileged:alpine
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: conf
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: conf
+        configMap:
+          name: secure-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: secure-service
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: secure-service
+  ports:
+  - port: 80
+    targetPort: 8080
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_create_requestauthentication"><a class="anchor" href="#_step_2_create_requestauthentication"></a>Step 2: Create RequestAuthentication</h3>
+<div class="paragraph">
+<p>Create a RequestAuthentication policy for the service:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: secure-jwt-auth
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    matchLabels:
+      app: secure-service
+  jwtRules:
+  - issuer: "testing@secure.istio.io"
+    jwksUri: "https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/jwks.json"
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_create_comprehensive_authorizationpolicy"><a class="anchor" href="#_step_3_create_comprehensive_authorizationpolicy"></a>Step 3: Create Comprehensive AuthorizationPolicy</h3>
+<div class="paragraph">
+<p>Create an AuthorizationPolicy that combines multiple rules:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: secure-policy
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    matchLabels:
+      app: secure-service
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        requestPrincipals: ["testing@secure.istio.io/*"]
+    to:
+    - operation:
+        methods: ["GET", "POST"]
+        paths: ["/api/*"]
+  - from:
+    - source:
+        requestPrincipals: ["testing@secure.istio.io/*"]
+    to:
+    - operation:
+        methods: ["GET"]
+        paths: ["/public/*"]
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_create_deny_policy_for_admin"><a class="anchor" href="#_step_4_create_deny_policy_for_admin"></a>Step 4: Create Deny Policy for Admin</h3>
+<div class="paragraph">
+<p>Create a deny policy for admin endpoints:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-secure-admin
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    matchLabels:
+      app: secure-service
+  action: DENY
+  rules:
+  - to:
+    - operation:
+        paths: ["/admin/*"]
+EOF</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_test_complete_security_configuration"><a class="anchor" href="#_step_5_test_complete_security_configuration"></a>Step 5: Test Complete Security Configuration</h3>
+<div class="paragraph">
+<p>Test without token (should be denied):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v http://secure-service/api/test</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Test with valid token on allowed path (should work):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">TOKEN=$(curl -s https://raw.githubusercontent.com/istio/istio/release-1.28/security/tools/jwt/samples/demo.jwt)
+oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -H "Authorization: Bearer $TOKEN" http://secure-service/api/test</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Test with valid token on denied path (should be denied):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -H "Authorization: Bearer $TOKEN" http://secure-service/admin/test</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Test with valid token on public path (should work):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run curl-test --image=curlimages/curl:latest --rm -i --restart=Never -n $NAMESPACE -- curl -v -H "Authorization: Bearer $TOKEN" http://secure-service/public/test</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_6_verify_complete_configuration"><a class="anchor" href="#_step_6_verify_complete_configuration"></a>Step 6: Verify Complete Configuration</h3>
+<div class="paragraph">
+<p>View all security policies:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get requestauthentication,authorizationpolicy -n $NAMESPACE</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>View detailed configurations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get requestauthentication secure-jwt-auth -n $NAMESPACE -o yaml
+oc get authorizationpolicy secure-policy -n $NAMESPACE -o yaml
+oc get authorizationpolicy deny-secure-admin -n $NAMESPACE -o yaml</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In these exercises, you have:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Configured different load balancing algorithms (round-robin, least-connection, random) in DestinationRules</p>
+</li>
+<li>
+<p>Implemented outlier detection and failover behavior</p>
+</li>
+<li>
+<p>Configured circuit breaking to prevent cascading failures</p>
+</li>
+<li>
+<p>Set up RequestAuthentication to validate JWT tokens</p>
+</li>
+<li>
+<p>Created AuthorizationPolicies with various rules (method-based, path-based, deny policies)</p>
+</li>
+<li>
+<p>Combined authentication and authorization for complete security</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These advanced features enable you to build resilient, secure microservices with fine-grained access control.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_troubleshooting"><a class="anchor" href="#_troubleshooting"></a>Troubleshooting</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you encounter issues:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Load balancing not working</strong>: Verify the DestinationRule is applied and check that multiple endpoints are available</p>
+</li>
+<li>
+<p><strong>Failover not triggering</strong>: Check outlier detection settings and ensure errors are being generated</p>
+</li>
+<li>
+<p><strong>Circuit breaker not opening</strong>: Verify connection pool limits are appropriate and that load is sufficient</p>
+</li>
+<li>
+<p><strong>JWT authentication failing</strong>: Verify the JWKS endpoint is accessible and the token format is correct</p>
+</li>
+<li>
+<p><strong>Authorization denying valid requests</strong>: Check the request principal matches the policy rules and verify policy order (DENY takes precedence)</p>
+</li>
+<li>
+<p><strong>Policies not applying</strong>: Verify selector labels match the workload labels and check namespace scope</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="module-03-content.html" class="query-params-link">Content</a></span>
+  <span class="next"><a href="module-04-content.html" class="query-params-link">Content</a></span>
+</nav>
+</article>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>  </div>
+</main>
+</div>
+<footer class="footer">
+  <a href="https://demo.redhat.com" target="_blank" class="poweredBy"><p>Powered by</p><div class="labInfo_poweredBy" style="display: block; width: 260px;"><svg class="labInfo_poweredByLogo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1508.5 178.739"><g fill="#111"><path d="M316.6 63.2v-56H342a21.279 21.279 0 0 1 7.8 1.3 18.111 18.111 0 0 1 5.9 3.5 15.577 15.577 0 0 1 5 11.8 15.051 15.051 0 0 1-3.1 9.5 16.836 16.836 0 0 1-8.4 5.8l12.5 24.1h-9.3l-11.6-23H325v23Zm24.7-48.6H325v18.7h16.3q5.25 0 8.1-2.7a8.7 8.7 0 0 0 2.8-6.6 8.7 8.7 0 0 0-2.8-6.6c-1.8-1.9-4.5-2.8-8.1-2.8ZM364.1 42.8a20.674 20.674 0 0 1 1.6-8.2 20.288 20.288 0 0 1 4.3-6.7 19.92 19.92 0 0 1 6.5-4.5 19.718 19.718 0 0 1 8-1.6 18.463 18.463 0 0 1 7.8 1.6 18.677 18.677 0 0 1 6.2 4.5 20.927 20.927 0 0 1 4.1 6.8 23.2 23.2 0 0 1 1.5 8.4v2.3H372a13.822 13.822 0 0 0 4.6 8.4 13.6 13.6 0 0 0 9.1 3.3 15.553 15.553 0 0 0 5.7-1 12.858 12.858 0 0 0 4.6-2.6l5.1 5a25.983 25.983 0 0 1-7.4 4.1 24.69 24.69 0 0 1-8.4 1.3 21.306 21.306 0 0 1-8.4-1.6 22.763 22.763 0 0 1-6.8-4.4 20.788 20.788 0 0 1-4.5-6.7 23.2 23.2 0 0 1-1.5-8.4Zm20.2-14.2a11.527 11.527 0 0 0-8 3 13.046 13.046 0 0 0-4.2 7.8h24.2a13.091 13.091 0 0 0-4.2-7.8 11.106 11.106 0 0 0-7.8-3ZM443.1 63.2v-3.8a19.448 19.448 0 0 1-5.8 3.3 18.924 18.924 0 0 1-6.7 1.2 19.824 19.824 0 0 1-14.6-6.1 22.268 22.268 0 0 1-4.4-6.7 21.812 21.812 0 0 1 0-16.4A20.534 20.534 0 0 1 416 28a19.335 19.335 0 0 1 6.6-4.5 20.334 20.334 0 0 1 8.2-1.6 20.7 20.7 0 0 1 6.6 1 19.415 19.415 0 0 1 5.7 3V7.2l8-1.8v57.8Zm-25.2-20.4a13.718 13.718 0 0 0 4 10.1 13.45 13.45 0 0 0 9.8 4.1 14.956 14.956 0 0 0 6.4-1.3 15.954 15.954 0 0 0 4.9-3.6V33.6a14.988 14.988 0 0 0-4.9-3.5 15.271 15.271 0 0 0-6.4-1.3 13.423 13.423 0 0 0-9.9 4 13.806 13.806 0 0 0-3.9 10ZM478.1 63.2v-56h8.4v24h29.8v-24h8.4v56h-8.4V38.8h-29.8v24.4ZM547.2 64a16.483 16.483 0 0 1-10.8-3.5 11.037 11.037 0 0 1-4.2-8.9 10.375 10.375 0 0 1 4.7-9.2 20.76 20.76 0 0 1 11.8-3.2 27.841 27.841 0 0 1 5.8.6 27.374 27.374 0 0 1 5.3 1.6v-4.3a8.143 8.143 0 0 0-2.6-6.5 11.452 11.452 0 0 0-7.4-2.2 20.788 20.788 0 0 0-6 .9 34.616 34.616 0 0 0-6.6 2.6l-3-6a54.169 54.169 0 0 1 8.4-3.1 33.18 33.18 0 0 1 8.3-1.1c5.2 0 9.3 1.3 12.2 3.8s4.4 6.1 4.4 10.8v27h-7.8v-3.5a19.441 19.441 0 0 1-5.8 3.2 23.54 23.54 0 0 1-6.7 1Zm-7.3-12.6a5.646 5.646 0 0 0 2.6 4.8 11.193 11.193 0 0 0 6.6 1.8 16.256 16.256 0 0 0 5.9-1 14.449 14.449 0 0 0 4.9-2.9V47a19.778 19.778 0 0 0-4.8-1.8 24.933 24.933 0 0 0-5.7-.6 11.859 11.859 0 0 0-6.8 1.8 5.728 5.728 0 0 0-2.7 5ZM580.6 53.2v-24H572v-6.7h8.6V12.1l7.9-1.9v12.3h12v6.7h-12v22.1a5.94 5.94 0 0 0 1.4 4.4c.9.9 2.5 1.3 4.6 1.3a23.637 23.637 0 0 0 3-.2 10.857 10.857 0 0 0 2.8-.8v6.7a19.28 19.28 0 0 1-3.8.9 27.484 27.484 0 0 1-3.8.3c-3.9 0-7-.9-9-2.8-2-1.7-3.1-4.4-3.1-7.9Z"></path></g><path d="M127 90.2c12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4L149.8 37c-1.7-7.1-3.2-10.3-15.7-16.6-9.7-5-30.8-13.1-37.1-13.1-5.8 0-7.5 7.5-14.4 7.5-6.7 0-11.6-5.6-17.9-5.6-6 0-9.9 4.1-12.9 12.5 0 0-8.4 23.7-9.5 27.2a4.216 4.216 0 0 0-.3 1.9c0 9.2 36.3 39.4 85 39.4Zm32.5-11.4c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3C21.8 58.8 0 61.8 0 81c0 31.5 74.6 70.3 133.7 70.3 45.3 0 56.7-20.5 56.7-36.6-.1-12.8-11-27.3-30.9-35.9Z" fill="#e00"></path><path d="M159.5 78.8c1.7 8.2 1.7 9.1 1.7 10.1 0 14-15.7 21.8-36.4 21.8-46.8 0-87.7-27.4-87.7-45.5a17.535 17.535 0 0 1 1.5-7.3l3.7-9.1a4.877 4.877 0 0 0-.3 2c0 9.2 36.3 39.4 85 39.4 12.5 0 30.6-2.6 30.6-17.5a12.678 12.678 0 0 0-.3-3.4Z"></path><path d="M253.5 158.7a2.22 2.22 0 0 1-2.2-2.2V2.2a2.2 2.2 0 0 1 4.4 0v154.2a2.242 2.242 0 0 1-2.2 2.3Z" fill="#111"></path><text data-name="Demo Platform" transform="translate(1186 149)" fill="#111" font-size="82" font-family="'RedHatDisplay', 'Overpass', overpass, helvetica, arial, sans-serif" font-weight="700"><tspan x="-877.892" y="0">Demo Platform</tspan></text></svg></div></div>
+</footer>
+<script src="../_/js/vendor/clipboard.js"></script>
+<script src="../_/js/site.js"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+  </body>
+</html>
